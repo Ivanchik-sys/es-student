@@ -1,4 +1,5 @@
 #include "led.h"
+#include "log.h"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
@@ -24,6 +25,10 @@ void handle_command(int command)
     {
         led_set(false);
         printf("led %s\n", led_is_on() ? "on" : "off");
+    }
+    else if (command == 'v')
+    {
+        log_version();
     }
     else
     {
@@ -62,6 +67,7 @@ int main()
             continue;
         }
 
+        LOG_DBG("got %c\n", command);
         handle_command(command);
     }
 }
