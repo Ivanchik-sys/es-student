@@ -3,17 +3,17 @@
 устройство: 2e8a:000a
 серийный номер: E663589863421C2E
 порт: COM5
-начало: 2026-09-22T23:13:38
+начало: 2026-09-22T23:17:33
    0.001 --> v
-   0.008 <-- dbg main:70 got v
-   0.009 <-- device: es-led-module 1.0.0, built Sep 22 2026 22:48:39, log level 3
-   1.023 --> e
-   1.028 <-- dbg main:70 got e
-   1.028 <-- inf handle_command:22 led on
-   2.037 --> d
-   2.048 <-- dbg main:70 got d
-   2.049 <-- inf handle_command:27 led off
-   3.051 --> q
-   3.068 <-- dbg main:70 got q
-   3.069 <-- err handle_command:35 unknown command: q
+   0.013 <-- dbg main:70 got v
+   0.014 <-- device: es-led-module 1.0.0, built Sep 22 2026 22:48:39, log level 3
+   1.020 --> e
+   1.033 <-- dbg main:70 got e
+   1.034 <-- inf handle_command:22 led on
+   2.021 --> d
+   2.034 <-- dbg main:70 got d
+   2.035 <-- inf handle_command:27 led off
+   3.037 --> q
+   3.054 <-- dbg main:70 got q
+   3.055 <-- err handle_command:35 unknown command: q
 итог: отправлено команд 4

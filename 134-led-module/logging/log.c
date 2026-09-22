@@ -1,4 +1,5 @@
 #include "log.h"
+#include "device.h"
 
 #include <stdio.h>
 
