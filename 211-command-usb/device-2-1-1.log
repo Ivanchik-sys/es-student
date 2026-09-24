@@ -15,7 +15,7 @@
    4.361 --> info
    4.459 <-- info
    4.461 <-- dbg read_line:66 got info
-   4.461 <-- project: 211-command-sub
+   4.461 <-- project: 211-command-usb
    4.462 <-- repo: https://github.com/Ivanchik-sys/es-student
    4.462 <-- board: pico
    4.462 <-- serial: E663589863421C2E
