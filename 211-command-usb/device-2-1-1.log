@@ -3,25 +3,25 @@
 устройство: 2e8a:000a
 серийный номер: E663589863421C2E
 порт: COM5
-начало: 2026-09-24T19:23:35
+начало: 2026-09-24T19:34:02
    0.001 --> enable
    0.138 <-- enable
    0.138 <-- dbg read_line:66 got enable
    0.138 <-- inf handle_command:29 led on
-   2.185 --> disable
-   2.339 <-- disable
-   2.339 <-- dbg read_line:66 got disable
-   2.339 <-- inf handle_command:34 led off
-   4.377 --> info
-   4.460 <-- info
+   2.162 --> disable
+   2.319 <-- disable
+   2.319 <-- dbg read_line:66 got disable
+   2.319 <-- inf handle_command:34 led off
+   4.361 --> info
+   4.459 <-- info
    4.461 <-- dbg read_line:66 got info
    4.461 <-- project: 211-command-sub
    4.462 <-- repo: https://github.com/Ivanchik-sys/es-student
    4.462 <-- board: pico
    4.462 <-- serial: E663589863421C2E
    4.462 <-- chip: manufacturer 0x927, part 0x0002, revision 2
-   4.965 <-- pico-sdk: 2.3.0
-   6.497 --> nosuchcommand
+   4.976 <-- pico-sdk: 2.3.0
+   6.495 --> nosuchcommand
    6.761 <-- nosuchcommand
    6.762 <-- dbg read_line:66 got nosuchcommand
    6.762 <-- err handle_command:46 unknown command: nosuchcommand
