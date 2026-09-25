@@ -17,27 +17,40 @@ void mem_info(void)
     row("sram", SRAM_BASE, SRAM_BASE + 270336);
     row("rom", ROM_BASE, ROM_BASE + 16384);
     
+    uintptr_t flash_start = (uintptr_t)&__flash_binary_start;
+    uintptr_t flash_end   = (uintptr_t)&__flash_binary_end;
+    uintptr_t boot2_start = (uintptr_t)&__boot2_start__;
+    uintptr_t boot2_end   = (uintptr_t)&__boot2_end__;
+    uintptr_t etext       = (uintptr_t)&__etext;
+    uintptr_t data_start  = (uintptr_t)&__data_start__;
+    uintptr_t data_end    = (uintptr_t)&__data_end__;
+    uintptr_t bss_start   = (uintptr_t)&__bss_start__;
+    uintptr_t bss_end     = (uintptr_t)&__bss_end__;
+    uintptr_t heap_limit  = (uintptr_t)&__HeapLimit;
+    uintptr_t stack_bot   = (uintptr_t)&__StackBottom;
+    uintptr_t stack_top   = (uintptr_t)&__StackTop;
 
-    row("image", (uintptr_t)&__flash_binary_start, (uintptr_t)&__flash_binary_end);
-    row("free", (uintptr_t)&__flash_binary_end, XIP_BASE + PICO_FLASH_SIZE_BYTES);
-    row("boot2", (uintptr_t)&__boot2_start__, (uintptr_t)&__boot2_end__);
-    row("text", (uintptr_t)&__boot2_end__, (uintptr_t)&__etext);
+    row("image", flash_start, flash_end);
+    row("free", flash_end, XIP_BASE + PICO_FLASH_SIZE_BYTES);
+    row("boot2", boot2_start, boot2_end);
+    row("text", boot2_end, etext);
 
-    row("data flash", (uintptr_t)&__etext, (uintptr_t)&__etext + ((uintptr_t)&__data_end__ - (uintptr_t)&__data_start__));
-    row("data ram", (uintptr_t)&__data_start__, (uintptr_t)&__data_end__);
-    row("bss", (uintptr_t)&__bss_start__, (uintptr_t)&__bss_end__);
-    row("heap", (uintptr_t)&__bss_end__, (uintptr_t)&__HeapLimit);
-    row("stack", (uintptr_t)&__StackBottom, (uintptr_t)&__StackTop);
+    row("data flash", etext, etext + (data_end - data_start));
+    row("data ram", data_start, data_end);
+    row("bss", bss_start, bss_end);
+    row("heap", bss_end, heap_limit);
+    row("stack", stack_bot, stack_top);
 
     printf("\n\ntotal\n");
-    printf("  flash image %8u = ", (unsigned)(&__flash_binary_end - &__flash_binary_start));
-    printf("boot2 %u + ", (unsigned)(&__boot2_end__ - &__boot2_start__));
-    printf("text %u + ", (unsigned)(&__etext - &__boot2_end__));
-    printf("data %u\n", (unsigned)(&__data_end__ - &__data_start__));
-    printf("  flash free %9u of %u\n", (unsigned)(XIP_BASE + PICO_FLASH_SIZE_BYTES - (unsigned)&__flash_binary_end), (unsigned)PICO_FLASH_SIZE_BYTES);
-    printf("  ram used %11u = ", (unsigned)(&__data_end__ - &__data_start__ + &__bss_end__ - &__bss_start__));
-    printf("data %u + ", (unsigned)(&__data_end__ - &__data_start__));
-    printf("bss %u\n", (unsigned)(&__bss_end__ - &__bss_start__));
-    printf("  ram free %11u for heap ", (unsigned)(&__HeapLimit - &__bss_end__));
-    printf("and %u for stack\n", (unsigned)(&__StackTop - &__StackBottom));
+    
+    printf("  flash image %8u = ", (unsigned)(flash_end - flash_start));
+    printf("boot2 %u + ", (unsigned)(boot2_end - boot2_start));
+    printf("text %u + ", (unsigned)(etext - boot2_end));
+    printf("data %u\n", (unsigned)(data_end - data_start));
+    printf("  flash free %9u of %u\n", (unsigned)(XIP_BASE + PICO_FLASH_SIZE_BYTES - flash_end), (unsigned)PICO_FLASH_SIZE_BYTES);
+    printf("  ram used %11u = ", (unsigned)(data_end - data_start + bss_end - bss_start));
+    printf("data %u + ", (unsigned)(data_end - data_start));
+    printf("bss %u\n", (unsigned)(bss_end - bss_start));
+    printf("  ram free %11u for heap ", (unsigned)(heap_limit - bss_end));
+    printf("and %u for stack\n", (unsigned)(stack_top - stack_bot));
 }
