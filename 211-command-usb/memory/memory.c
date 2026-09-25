@@ -21,7 +21,7 @@ extern char __StackBottom;
 extern char __StackTop;
 
 uint32_t data_variable = 100;
-uint32_t bss_variable = 0;
+uint32_t bss_variable;
 
 static void row(const char *name, uintptr_t start, uintptr_t end)
 {
@@ -77,18 +77,20 @@ void fw_info(void)
     }
 
     uint16_t *main_code = (uint16_t *)((uintptr_t)main & ~1u);
+    uintptr_t main_entry = (uintptr_t)main_code | 1u;
     uint16_t *fw_info_code = (uint16_t *)((uintptr_t)fw_info & ~1u);
+    uintptr_t fw_info_entry = (uintptr_t)fw_info_code | 1u;
 
     printf("object          address     value\n");
-    printf("%-15s 0x%08x  0x%x\n", "main", (uintptr_t)main_code, *main_code);
-    printf("%-15s 0x%08x  0x%x\n", "fw_info", (uintptr_t)fw_info_code, *fw_info_code);
+    printf("%-15s 0x%08x  0x%x\n", "main", main_entry, *main_code);
+    printf("%-15s 0x%08x  0x%x\n", "fw_info", fw_info_entry, *fw_info_code);
     
     printf("%-15s 0x%08x\n", "commands", &commands);
 
     for(int i = 0; i < command_count; i++)
     {
         uint16_t *command_code = (uint16_t *)((uintptr_t)commands[i].handler & ~1u);
-        printf(" - %-12s 0x%08x\n", commands[i].name, (uintptr_t)command_code);
+        printf(" - %-13s 0x%08x\n", commands[i].name, (uintptr_t)command_code);
     }
 
     printf("%-15s 0x%08x  %s\n", "DEVICE_PROJECT", &DEVICE_PROJECT, DEVICE_PROJECT);
