@@ -30,14 +30,14 @@ void mem_info(void)
     row("stack", (uintptr_t)&__StackBottom, (uintptr_t)&__StackTop);
 
     printf("\n\ntotal\n");
-    printf("  flash image %8u = ", (unsigned)((uintptr_t)&__flash_binary_end - (uintptr_t)&__flash_binary_start));
-    printf("boot2 %u + ", (unsigned)((uintptr_t)&__boot2_end__ - (uintptr_t)&__boot2_start__));
-    printf("text %u + ", (unsigned)((uintptr_t)&__etext - (uintptr_t)&__boot2_end__));
-    printf("data %u\n", (unsigned)((uintptr_t)&__data_end__ - (uintptr_t)&__data_start__));
-    printf("  flash free %9u of %u\n", (unsigned)(XIP_BASE + PICO_FLASH_SIZE_BYTES - (uintptr_t)&__flash_binary_end), (unsigned)PICO_FLASH_SIZE_BYTES);
-    printf("  ram used %11u = ", (unsigned)((uintptr_t)&__data_end__ - (uintptr_t)&__data_start__ + (uintptr_t)&__bss_end__ - (uintptr_t)&__bss_start__));
-    printf("data %u + ", (unsigned)((uintptr_t)&__data_end__ - (uintptr_t)&__data_start__));
-    printf("bss %u\n", (unsigned)((uintptr_t)&__bss_end__ - (uintptr_t)&__bss_start__));
-    printf("  ram free %11u for heap ", (unsigned)((uintptr_t)&__HeapLimit - (uintptr_t)&__bss_end__));
-    printf("and %u for stack\n", (unsigned)((uintptr_t)&__StackTop - (uintptr_t)&__StackBottom));
+    printf("  flash image %8u = ", (unsigned)(&__flash_binary_end - &__flash_binary_start));
+    printf("boot2 %u + ", (unsigned)(&__boot2_end__ - &__boot2_start__));
+    printf("text %u + ", (unsigned)(&__etext - &__boot2_end__));
+    printf("data %u\n", (unsigned)(&__data_end__ - &__data_start__));
+    printf("  flash free %9u of %u\n", (unsigned)(XIP_BASE + PICO_FLASH_SIZE_BYTES - (unsigned)&__flash_binary_end), (unsigned)PICO_FLASH_SIZE_BYTES);
+    printf("  ram used %11u = ", (unsigned)(&__data_end__ - &__data_start__ + &__bss_end__ - &__bss_start__));
+    printf("data %u + ", (unsigned)(&__data_end__ - &__data_start__));
+    printf("bss %u\n", (unsigned)(&__bss_end__ - &__bss_start__));
+    printf("  ram free %11u for heap ", (unsigned)(&__HeapLimit - &__bss_end__));
+    printf("and %u for stack\n", (unsigned)(&__StackTop - &__StackBottom));
 }
