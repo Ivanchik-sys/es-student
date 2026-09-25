@@ -55,7 +55,7 @@ void dev_info(void)
            device_card.version);
     
     printf("- %-13s 0x%08x %5u %6u %s\n",
-           "version",
+           "name",
            device_card.name,
            sizeof(device_card.name),
            offsetof(struct info_t, name),
