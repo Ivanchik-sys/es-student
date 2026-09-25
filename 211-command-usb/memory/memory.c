@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include "device.h"
 #include "memory.h"
+#include "command.h"
 #include "hardware/regs/addressmap.h"
 #include "pico/stdlib.h"
 
@@ -17,11 +20,16 @@ extern char __HeapLimit;
 extern char __StackBottom;
 extern char __StackTop;
 
+uint32_t data_variable = 100;
+uint32_t bss_variable = 0;
+
 static void row(const char *name, uintptr_t start, uintptr_t end)
 {
     printf("%-10s 0x%08x 0x%08x %8u\n",
            name, (unsigned)start, (unsigned)end, (unsigned)(end - start));
 }
+
+int main(void);
 
 void mem_info(void)
 {
@@ -53,4 +61,42 @@ void mem_info(void)
     printf("bss %u\n", (unsigned)(&__bss_end__ - &__bss_start__));
     printf("  ram free %11u for heap ", (unsigned)(&__HeapLimit - &__bss_end__));
     printf("and %u for stack\n", (unsigned)(&__StackTop - &__StackBottom));
+}
+
+void fw_info(void)
+{
+    data_variable = data_variable + 1;
+    bss_variable = bss_variable + 1;
+
+    uint32_t stack_variable = 1946;
+    uint32_t *heap_variable = malloc(sizeof(uint32_t));
+
+    if (heap_variable != NULL)
+    {
+        *heap_variable = 1951;
+    }
+
+    uint16_t *main_code = (uint16_t *)((uintptr_t)main & ~1u);
+    uint16_t *fw_info_code = (uint16_t *)((uintptr_t)fw_info & ~1u);
+
+    printf("object          address     value\n");
+    printf("%-15s 0x%08x  0x%x\n", "main", (uintptr_t)main_code, *main_code);
+    printf("%-15s 0x%08x  0x%x\n", "fw_info", (uintptr_t)fw_info_code, *fw_info_code);
+    
+    printf("%-15s 0x%08x\n", "commands", &commands);
+
+    for(int i = 0; i < command_count; i++)
+    {
+        uint16_t *command_code = (uint16_t *)((uintptr_t)commands[i].handler & ~1u);
+        printf(" - %-12s 0x%08x\n", commands[i].name, (uintptr_t)command_code);
+    }
+
+    printf("%-15s 0x%08x  %s\n", "DEVICE_PROJECT", &DEVICE_PROJECT, DEVICE_PROJECT);
+    printf("%-15s 0x%08x  %s\n", "DEVICE_BOARD", &DEVICE_BOARD, DEVICE_BOARD);
+    printf("%-15s 0x%08x  %u\n", "data_variable", &data_variable, data_variable);
+    printf("%-15s 0x%08x  %u\n", "bss_variable", &bss_variable, bss_variable);
+    printf("%-15s 0x%08x  %u\n", "stack_variable", &stack_variable, stack_variable);
+    printf("%-15s 0x%08x  %u\n", "heap_variable", heap_variable, *heap_variable);
+
+    free(heap_variable);
 }
