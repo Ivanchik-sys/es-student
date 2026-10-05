@@ -95,7 +95,7 @@ void cmd_main_time_exec(void)
 
 void cmd_main_time_reset(void)
 {
-    profiling_reset_max;
+    profiling_reset_max();
     printf("max reset\n");
 }
 
