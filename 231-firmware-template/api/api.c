@@ -101,7 +101,7 @@ static void cmd_calc_pi(const command_t *command)
     
     if (command->argc > 1)
     {
-        LOG_ERR("usage pi_start [<terms>]\n");
+        printf("error: usage pi_start [terms]\n");
         return;
     }
 
@@ -109,13 +109,13 @@ static void cmd_calc_pi(const command_t *command)
     {
         if (!parse_u32(command->argv[0], &arg))
         {
-            LOG_ERR("usage pi_start [<terms>]\n");
+            printf("error: usage pi_start [terms]\n");
             return;
         }
     
         if (arg < 1)
         {
-            LOG_ERR("error: terms must be greater than 0\n");
+            printf("error: terms must be greater than 0\n");
             return;
         }
     }
@@ -144,7 +144,7 @@ void api_handle(const command_t *command)
 {
     if(command->truncated)
     {
-        LOG_ERR("command longer than 63 characters or 4 arguments\n");
+        printf("error: command longer than 63 characters or 4 arguments\n");
         return;
     }
 
@@ -157,5 +157,5 @@ void api_handle(const command_t *command)
         }
     }
 
-    LOG_ERR("unknown command: %s, try help\n", command->name);
+    printf("error: unknown command: '%s', try help\n", command->name);
 }
