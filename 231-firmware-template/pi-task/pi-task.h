@@ -1,7 +1,8 @@
 #pragma once
 #include <stdint.h>
 
-void pi_task_init(void);
-void pi_task_start(uint32_t n);
+
+bool pi_task_start(uint32_t n);
+bool pi_task_get_result(double *result, unsigned int *time);
 void pi_task_handle(void);
-void print_pi_task(void);
+

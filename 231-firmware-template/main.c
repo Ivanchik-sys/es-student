@@ -21,8 +21,6 @@ int main()
 
     button_task_init();
 
-    pi_task_init();
-
     while (1)
     {
 

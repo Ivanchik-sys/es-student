@@ -22,12 +22,8 @@ static double pi_result;
 static uint64_t time_start;
 static uint64_t time_finish;
 
-void pi_task_init(void)
-{
-    pi_state = PI_NOT_STARTED;
-}
 
-void pi_task_start(uint32_t n)
+bool pi_task_start(uint32_t n)
 {
     if(pi_state != PI_RUNNING) {
         pi_n = n;
@@ -36,10 +32,27 @@ void pi_task_start(uint32_t n)
         pi_sign = 1.0;
         time_start = time_us_64();
         pi_state = PI_RUNNING;
-        printf("pi: started, %u terms\n", pi_n);
+        return true;
     }
-    else
-        printf("error: pi is busy\n");
+    return false;
+}
+
+bool pi_task_get_result(double *result, unsigned int *time)
+{
+    switch(pi_state)
+    {
+        case PI_NOT_STARTED:
+            printf("pi: not started\n");
+            return false;
+        case PI_RUNNING:
+            printf("pi: running\n");
+            return false;
+        case PI_READY:
+            *result = pi_result;
+            *time = (unsigned int) ((time_finish - time_start) / 1000);
+            printf("pi: %f in %u ms\n", *result, *time);
+            return true;
+    }
 }
 
 void pi_task_handle(void)
@@ -71,18 +84,3 @@ void pi_task_handle(void)
     
 }
 
-void print_pi_task(void)
-{
-    switch(pi_state)
-    {
-        case PI_NOT_STARTED:
-            printf("pi: not started\n");
-            break;
-        case PI_RUNNING:
-            printf("pi: running\n");
-            break;
-        case PI_READY:
-            printf("pi: %f in %u ms\n", pi_result, (unsigned int) (time_finish - time_start) / 1000);
-            break;
-    }
-}

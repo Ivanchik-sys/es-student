@@ -120,13 +120,20 @@ static void cmd_pi_start(const command_t *command)
         }
     }
     
-    pi_task_start(arg);
+    if(pi_task_start(arg))
+        printf("pi: started, %u terms\n", arg);
+    else
+        printf("error: pi is busy\n");
+
     return;
 }
 
 static void cmd_pi(const command_t *command)
 {
-    print_pi_task();
+    double result;
+    unsigned int time;
+    
+    pi_task_get_result(&result, &time);
 }
 
 static void cmd_main_time_exec(const command_t *command)
