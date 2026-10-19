@@ -5,8 +5,8 @@
 
 // Состояние задачи: внутреннее связывание, только для этого файла
 static led_state_t led_state;
-static uint64_t half_period_us = 500000;
-static uint64_t last_toggle_us = 0;
+static uint32_t half_period_us = 500000;
+static uint32_t last_toggle_us = 0;
 
 static const char *led_state_names[] = {
     "off", 
@@ -14,9 +14,9 @@ static const char *led_state_names[] = {
     "blink",
 };
 
-static bool period_elapsed(uint64_t *last_us, uint64_t period_us)
+static bool period_elapsed(uint32_t *last_us, uint32_t period_us)
 {
-    uint64_t now_us = time_us_64();
+    uint32_t now_us = (uint32_t) time_us_64();
 
     if (now_us - *last_us < period_us) {
         return false;
@@ -92,7 +92,7 @@ bool led_task_set_period_ms(uint32_t period_ms)
         return false;
     }
 
-    half_period_us = (uint64_t)period_ms * 1000 / 2;
+    half_period_us = (uint32_t)period_ms * 1000 / 2;
     return true;
 }
 

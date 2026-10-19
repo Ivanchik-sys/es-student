@@ -1,6 +1,7 @@
 #include "api.h"
 #include "led-task.h"
 #include "button-task.h"
+#include "pi-task.h"
 #include "log.h"
 #include "device.h"
 #include <stdio.h>
@@ -12,14 +13,12 @@
 #include "pico/time.h"
 #include "profiling.h"
 
-//#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-
-//extern const api_command_t api_commands[];
 
 static void cmd_help(const command_t *command);
 static void cmd_info(const command_t *command);
 static void cmd_uptime(const command_t *command);
-static void cmd_calc_pi(const command_t *command);
+static void cmd_pi_start(const command_t *command);
+static void cmd_pi(const command_t *command);
 static void cmd_main_time_exec(const command_t *command);
 static void cmd_main_time_reset(const command_t *command);
 static void cmd_led_enable(const command_t *command);
@@ -56,7 +55,8 @@ const api_command_t api_commands[] = {
     { "help", "list of commands", cmd_help},
     { "info", "device passport", cmd_info },
     { "uptime", "time since reset", cmd_uptime },
-    { "calc_pi", "calculate pi: calc_pi [terms]", cmd_calc_pi },
+    { "pi_start", "start pi calculation: pi_start [terms]", cmd_pi_start },
+    { "pi", "pi calculation state", cmd_pi },
     { "main_time_exec", "superloop iteration: average and maximum", cmd_main_time_exec },
     { "main_time_reset", "reset maximum iteration", cmd_main_time_reset },
     { "led_enable", "switch led to ON", cmd_led_enable},
@@ -95,21 +95,7 @@ static void cmd_uptime(const command_t *command)
 // 1 000 000 членов по 585 тактов при 125 МГц — около 4,7 с
 const uint CALC_PI_TERMS = 1000000;
 
-double calc_pi(uint terms)
-{
-    double sum = 0.0;
-    double sign = 1.0;
-
-    for (int k = 0; k < terms; k++) {
-        sum += sign / (2.0 * k + 1.0);
-        sign = -sign;
-    }
-    return 4.0 * sum;
-}
-
-volatile double pi_result;
-
-static void cmd_calc_pi(const command_t *command)
+static void cmd_pi_start(const command_t *command)
 {
     uint32_t arg = CALC_PI_TERMS;
     
@@ -134,13 +120,13 @@ static void cmd_calc_pi(const command_t *command)
         }
     }
     
-    uint64_t start_us = time_us_64();
-    pi_result = calc_pi(arg);
-    uint64_t spent_us = time_us_64() - start_us;
-
-    printf("pi: %.8f\n", pi_result);
-    printf("time: %llu ms\n", spent_us / 1000);
+    pi_task_start(arg);
     return;
+}
+
+static void cmd_pi(const command_t *command)
+{
+    print_pi_task();
 }
 
 static void cmd_main_time_exec(const command_t *command)
