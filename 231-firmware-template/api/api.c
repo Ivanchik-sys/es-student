@@ -200,7 +200,7 @@ static void cmd_led_period(const command_t *command)
 
 static void cmd_button(const command_t *command)
 {
-    print_button_state();
+    printf("button: %s, presses: %u\n", button_task_is_pressed()?"pressed":"released",  button_task_get_press_count());
 }
 
 

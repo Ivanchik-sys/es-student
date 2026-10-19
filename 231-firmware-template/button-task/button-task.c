@@ -49,63 +49,58 @@ void button_task_handle(void)
 
     switch (button_state)
     {
-    case BUTTON_STATE_RELEASED:
-        // Если кнопку нажали, запускаем таймер дребезга
-        if (is_button_down) 
-        {
-            button_timer = now_us;
-            button_state = BUTTON_STATE_PRESS_Q;
-        }
-        break;
-
-    case BUTTON_STATE_PRESS_Q:
-        if (is_button_down) 
-        {
-            // Если время дребезга прошло и кнопка всё ещё нажата
-            if (now_us - button_timer >= debounce) 
+        case BUTTON_STATE_RELEASED:
+        
+            if (is_button_down) 
             {
-                button_state = BUTTON_STATE_PRESSED;
-                
-                // СТРОГО ПРИ ПЕРЕХОДЕ: увеличиваем счётчик и переключаем светодиод
-                button_presses++;
-                led_task_next_state(); 
+                button_timer = now_us;
+                button_state = BUTTON_STATE_PRESS_Q;
             }
-        } 
-        else 
-        {
-            // Если кнопку отпустили раньше времени — это был шум
-            button_state = BUTTON_STATE_RELEASED;
-        }
-        break;
+            break;
 
-    case BUTTON_STATE_PRESSED:
-        // Если кнопку отпустили, запускаем таймер дребезга для отпускания
-        if (!is_button_down) 
-        {
-            button_timer = now_us;
-            button_state = BUTTON_STATE_RELEASE_Q;
-        }
-        break;
-
-    case BUTTON_STATE_RELEASE_Q:
-        if (!is_button_down) 
-        {
-            // Если время дребезга прошло и кнопку действительно отпустили
-            if (now_us - button_timer >= debounce) 
+        case BUTTON_STATE_PRESS_Q:
+            if (is_button_down) 
             {
+                // Если время дребезга прошло и кнопка всё ещё нажата
+                if (now_us - button_timer >= debounce) 
+                {
+                    button_state = BUTTON_STATE_PRESSED;
+                
+                    // СТРОГО ПРИ ПЕРЕХОДЕ: увеличиваем счётчик и переключаем светодиод
+                    button_presses++;
+                    led_task_next_state(); 
+                }
+            } 
+            else 
+            {
+                // Если кнопку отпустили раньше времени — это был шум
                 button_state = BUTTON_STATE_RELEASED;
             }
-        } 
-        else 
-        {
-            // Если кнопку снова зажали во время отпускания
-            button_state = BUTTON_STATE_PRESSED;
-        }
-        break;
-    }
-}
+            break;
 
-void print_button_state(void)
-{
-    printf("button: %s, presses: %u\n", button_state_names[button_state],  button_task_get_press_count());
+        case BUTTON_STATE_PRESSED:
+            // Если кнопку отпустили, запускаем таймер дребезга для отпускания
+            if (!is_button_down) 
+            {
+                button_timer = now_us;
+                button_state = BUTTON_STATE_RELEASE_Q;
+            }
+            break;
+
+        case BUTTON_STATE_RELEASE_Q:
+            if (!is_button_down) 
+            {
+                // Если время дребезга прошло и кнопку действительно отпустили
+                if (now_us - button_timer >= debounce) 
+                {
+                    button_state = BUTTON_STATE_RELEASED;
+                }
+            } 
+            else 
+            {
+                // Если кнопку снова зажали во время отпускания
+                button_state = BUTTON_STATE_PRESSED;
+            }
+            break;
+    }
 }
