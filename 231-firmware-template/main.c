@@ -1,4 +1,4 @@
-#include "led.h"
+#include "led-task.h"
 #include "log.h"
 #include "device.h"
 #include <stdio.h>
@@ -15,10 +15,13 @@ int main()
 
     profiling_init();
 
+    led_task_init();
+
     while (1)
     {
 
         profiling_iteration();
+        led_task_handle();
         
         const command_t *command = stdio_text_protocol_handle();
         if (command != NULL)

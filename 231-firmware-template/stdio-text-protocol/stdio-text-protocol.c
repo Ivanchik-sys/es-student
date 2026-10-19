@@ -92,7 +92,8 @@ const command_t *stdio_text_protocol_handle(void)
     if (symbol == 0x08 || symbol == 0x7F) {
         if (line_length > 0) {
             line_length--;
-            truncated = false;
+            if (line_length + 1 < STDIO_TEXT_PROTOCOL_LINE_SIZE)
+                truncated = false; // Проверяем на то, что действительно меньше ограничения
             putchar('\b');
             putchar(' '); 
             putchar('\b');
