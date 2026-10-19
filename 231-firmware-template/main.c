@@ -15,24 +15,42 @@ int main()
 {
     stdio_text_protocol_init();   
 
-    profiling_init();
-
     led_task_init();
 
     button_task_init();
 
+    profiling_stopwatch_init(PROFILING_LOOP, "loop");
+    profiling_stopwatch_init(PROFILING_COMMAND, "command");
+    profiling_stopwatch_init(PROFILING_LED, "led");
+    profiling_stopwatch_init(PROFILING_BUTTON, "button");
+    profiling_stopwatch_init(PROFILING_PI, "pi");
+
+    LOG_INF("%s %s\n", DEVICE_NAME, FIRMWARE_VERSION);
+
     while (1)
     {
-
-        profiling_iteration();
-        led_task_handle();
-        button_task_handle();
-        pi_task_handle();
+        profiling_start(PROFILING_LOOP);
         
+        profiling_start(PROFILING_LED);
+        led_task_handle();
+        profiling_stop(PROFILING_LED);
+
+        profiling_start(PROFILING_BUTTON);
+        button_task_handle();
+        profiling_stop(PROFILING_BUTTON);
+
+        profiling_start(PROFILING_PI);
+        pi_task_handle();
+        profiling_stop(PROFILING_PI);
+        
+        profiling_start(PROFILING_COMMAND);
         const command_t *command = stdio_text_protocol_handle();
         if (command != NULL)
         {
             api_handle(command);
         }
+        profiling_stop(PROFILING_COMMAND);
+
+        profiling_stop(PROFILING_LOOP);
     }
 }

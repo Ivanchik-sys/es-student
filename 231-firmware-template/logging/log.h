@@ -8,7 +8,7 @@
 #define LOG_LEVEL_DBG 3
 
 #ifndef LOG_LEVEL
-#define LOG_LEVEL LOG_LEVEL_ERR
+#define LOG_LEVEL LOG_LEVEL_INF
 #endif
 
 void log_version(void);

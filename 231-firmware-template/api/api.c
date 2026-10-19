@@ -19,8 +19,8 @@ static void cmd_info(const command_t *command);
 static void cmd_uptime(const command_t *command);
 static void cmd_pi_start(const command_t *command);
 static void cmd_pi(const command_t *command);
-static void cmd_main_time_exec(const command_t *command);
-static void cmd_main_time_reset(const command_t *command);
+static void cmd_profiling(const command_t *command);
+static void cmd_profiling_reset(const command_t *command);
 static void cmd_led_enable(const command_t *command);
 static void cmd_led_disable(const command_t *command);
 static void cmd_led_blink(const command_t *command);
@@ -57,8 +57,8 @@ const api_command_t api_commands[] = {
     { "uptime", "time since reset", cmd_uptime },
     { "pi_start", "start pi calculation: pi_start [terms]", cmd_pi_start },
     { "pi", "pi calculation state", cmd_pi },
-    { "main_time_exec", "superloop iteration: average and maximum", cmd_main_time_exec },
-    { "main_time_reset", "reset maximum iteration", cmd_main_time_reset },
+    { "profiling", "superloop iteration: average and maximum", cmd_profiling },
+    { "profiling_reset", "reset maximum iteration", cmd_profiling_reset },
     { "led_enable", "switch led to ON", cmd_led_enable},
     { "led_disable", "switch led to OFF", cmd_led_disable},
     { "led_blink", "switch led to BLINK", cmd_led_blink},
@@ -79,7 +79,17 @@ static void cmd_help(const command_t *command)
 
 static void cmd_info(const command_t *command)
 {
-    device_info();
+    device_info_t info;
+    
+    device_get_info(&info);
+
+    printf("project:  %s\n", info.device_name);
+    printf("board:    %s\n", info.board_type);
+    printf("serial:   %s\n", info.serial_number);
+    printf("chip:     manufacturer 0x%03lx, part 0x%04lx, revision %lu\n", 
+           info.chip_manufacturer, info.chip_part, info.chip_revision);
+    printf("pico-sdk: %s\n", info.sdk_version);
+
     return;
 }
 
@@ -136,17 +146,33 @@ static void cmd_pi(const command_t *command)
     pi_task_get_result(&result, &time);
 }
 
-static void cmd_main_time_exec(const command_t *command)
+static void cmd_profiling(const command_t *command)
 {
-    printf("iteration avg %.2f us, max %u us\n", profiling_avg_us(), (unsigned)profiling_max_us());
-    return;
+
+    profiling_result_t res;
+
+    for (uint32_t i = 0; i < PROFILING_MAX_STOPWATCHES; i++)
+    {
+        if (profiling_get(i, &res))
+        {
+            double mean_us = 0.0;
+            if (res.count > 0) {
+                mean_us = (double)res.total_us / res.count;
+            }
+
+            printf("%-10s count %-10lu mean %-5.2f us  max %llu us\n", 
+                   res.name, (unsigned long)res.count, mean_us, res.max_us);
+        }
+    }
 }
 
-static void cmd_main_time_reset(const command_t *command)
+static void cmd_profiling_reset(const command_t *command)
 {
-    profiling_reset_max();
-    printf("max reset\n");
-    return;
+
+    // Сбрасываем метрики всех секундомеров
+    profiling_reset(); 
+    
+    printf("all stopwatches reset\n");
 }
 
 static void cmd_led_enable(const command_t *command)

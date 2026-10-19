@@ -1,27 +1,33 @@
 #include "device.h"
-#include <stddef.h>
-#include <stdio.h>
 #include "pico/unique_id.h"
-#include "pico/version.h"
-#include "hardware/regs/addressmap.h"
+#include "pico/stdlib.h"
 #include "hardware/regs/sysinfo.h"
 
-void device_info(void)
+void device_get_info(device_info_t *info)
 {
+    if (info == NULL) {
+        return;
+    }
+
+    info->device_name = DEVICE_NAME;
+    info->firmware_version = FIRMWARE_VERSION;
+    info->device_project = DEVICE_PROJECT;
+    info->device_repo = DEVICE_REPO;
     
-    char board_id[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1];
-    pico_get_unique_board_id_string(board_id, sizeof(board_id));
-    
+    #ifdef PICO_BOARD
+    info->board_type = PICO_BOARD;
+    #else
+    info->board_type = DEVICE_BOARD;
+    #endif
+
+    info->sdk_version = PICO_SDK_VERSION_STRING;
+
+    pico_get_unique_board_id_string(info->serial_number, sizeof(info->serial_number));
+
     volatile uint32_t *chip_id = (uint32_t *)(SYSINFO_BASE + SYSINFO_CHIP_ID_OFFSET);
     uint32_t id = *chip_id;
-    uint32_t manufacturer = (id & SYSINFO_CHIP_ID_MANUFACTURER_BITS) >> SYSINFO_CHIP_ID_MANUFACTURER_LSB;
-    uint32_t part = (id & SYSINFO_CHIP_ID_PART_BITS) >> SYSINFO_CHIP_ID_PART_LSB;
-    uint32_t revision = (id & SYSINFO_CHIP_ID_REVISION_BITS) >> SYSINFO_CHIP_ID_REVISION_LSB;
     
-    printf("project: %s\n", DEVICE_PROJECT);
-    printf("repo: %s\n", DEVICE_REPO);
-    printf("board: %s\n", DEVICE_BOARD);
-    printf("serial: %s\n", board_id);
-    printf("chip: manufacturer 0x%03x, part 0x%04x, revision %u\n", manufacturer, part, revision);
-    printf("pico-sdk: %s\n" PICO_SDK_VERSION_STRING);
+    info->chip_manufacturer = (id & SYSINFO_CHIP_ID_MANUFACTURER_BITS) >> SYSINFO_CHIP_ID_MANUFACTURER_LSB;
+    info->chip_part = (id & SYSINFO_CHIP_ID_PART_BITS) >> SYSINFO_CHIP_ID_PART_LSB;
+    info->chip_revision = (id & SYSINFO_CHIP_ID_REVISION_BITS) >> SYSINFO_CHIP_ID_REVISION_LSB; // Проверить имя макроса ревизии в Pico SDK
 }
