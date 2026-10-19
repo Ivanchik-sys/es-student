@@ -1,5 +1,6 @@
 #include "api.h"
 #include "led-task.h"
+#include "button-task.h"
 #include "log.h"
 #include "device.h"
 #include <stdio.h>
@@ -25,6 +26,7 @@ static void cmd_led_enable(const command_t *command);
 static void cmd_led_disable(const command_t *command);
 static void cmd_led_blink(const command_t *command);
 static void cmd_led_period(const command_t *command);
+static void cmd_button(const command_t *command);
 
 // Число без знака из десятичной записи. false — в записи не только цифры
 // или число не помещается в uint32_t.
@@ -61,6 +63,7 @@ const api_command_t api_commands[] = {
     { "led_disable", "switch led to OFF", cmd_led_disable},
     { "led_blink", "switch led to BLINK", cmd_led_blink},
     { "led_period", "set led period in ms: led_period [period]", cmd_led_period},
+    { "button", "button state and press count", cmd_button},
 };
 
 const uint api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
@@ -193,6 +196,11 @@ static void cmd_led_period(const command_t *command)
 
     // ответ: состояние и период светодиода
     print_led_state();
+}
+
+static void cmd_button(const command_t *command)
+{
+    print_button_state();
 }
 
 
