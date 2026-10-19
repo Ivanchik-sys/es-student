@@ -1,15 +1,6 @@
 #include "profiling.h"
 #include "pico/stdlib.h"
 
-typedef enum {
-    PROFILING_LOOP,
-    PROFILING_COMMAND,
-    PROFILING_LED,
-    PROFILING_BUTTON,
-    PROFILING_PI,
-    PROFILING_MAX_STOPWATCHES // Автоматически станет равен 5
-} profiling_id_t;
-
 // Внутреннее состояние секундомера прошивки
 typedef struct {
     const char *name;
@@ -21,12 +12,11 @@ typedef struct {
     bool is_running;       // Флаг: секундомер сейчас считает
 } stopwatch_internal_t;
 
-// Создаем массив строго под количество наших секундомеров из enum
-static stopwatch_internal_t stopwatches[PROFILING_MAX_STOPWATCHES];
+static stopwatch_internal_t stopwatches[STOPWATCHES_COUNT];
 
 void profiling_stopwatch_init(uint32_t id, const char *name)
 {
-    if (id >= PROFILING_MAX_STOPWATCHES) {
+    if (id >= STOPWATCHES_COUNT) {
         return;
     }
 
@@ -41,7 +31,7 @@ void profiling_stopwatch_init(uint32_t id, const char *name)
 
 void profiling_start(uint32_t id)
 {
-    if (id >= PROFILING_MAX_STOPWATCHES || !stopwatches[id].is_initialized) {
+    if (id >= STOPWATCHES_COUNT || !stopwatches[id].is_initialized) {
         return;
     }
 
@@ -51,7 +41,7 @@ void profiling_start(uint32_t id)
 
 void profiling_stop(uint32_t id)
 {
-    if (id >= PROFILING_MAX_STOPWATCHES || !stopwatches[id].is_running) {
+    if (id >= STOPWATCHES_COUNT || !stopwatches[id].is_running) {
         return;
     }
 
@@ -70,7 +60,7 @@ void profiling_stop(uint32_t id)
 
 bool profiling_get(uint32_t id, profiling_result_t *result)
 {
-    if (id >= PROFILING_MAX_STOPWATCHES || !stopwatches[id].is_initialized || result == NULL) {
+    if (id >= STOPWATCHES_COUNT || !stopwatches[id].is_initialized || result == NULL) {
         return false;
     }
 
@@ -84,7 +74,7 @@ bool profiling_get(uint32_t id, profiling_result_t *result)
 
 void profiling_reset(void)
 {
-    for (uint32_t i = 0; i < PROFILING_MAX_STOPWATCHES; i++) {
+    for (uint32_t i = 0; i < STOPWATCHES_COUNT; i++) {
         if (stopwatches[i].is_initialized) {
             stopwatches[i].start_us = 0;
             stopwatches[i].total_us = 0;

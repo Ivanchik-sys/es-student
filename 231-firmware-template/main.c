@@ -10,6 +10,14 @@
 #include "api.h"
 #include "button-task.h"
 
+typedef enum {
+    PROFILING_LOOP,
+    PROFILING_COMMAND,
+    PROFILING_LED,
+    PROFILING_BUTTON,
+    PROFILING_PI,
+    PROFILING_MAX_STOPWATCHES // Автоматически равен 5
+} profiling_id_t;
 
 int main()
 {

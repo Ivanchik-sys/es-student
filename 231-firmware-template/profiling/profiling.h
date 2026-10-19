@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define STOPWATCHES_COUNT 5
+
 typedef struct {
     const char *name;
     uint32_t count;        // Количество запусков (итераций)

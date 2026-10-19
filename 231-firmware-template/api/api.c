@@ -151,7 +151,7 @@ static void cmd_profiling(const command_t *command)
 
     profiling_result_t res;
 
-    for (uint32_t i = 0; i < PROFILING_MAX_STOPWATCHES; i++)
+    for (uint32_t i = 0; i < STOPWATCHES_COUNT; i++)
     {
         if (profiling_get(i, &res))
         {
