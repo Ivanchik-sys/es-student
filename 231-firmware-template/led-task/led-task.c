@@ -96,8 +96,13 @@ bool led_task_set_period_ms(uint32_t period_ms)
     return true;
 }
 
+uint32_t led_task_get_period_ms(void)
+{
+    return 2 * half_period_us / 1000;
+}
+
 void print_led_state(void)
 {
-    printf("led: %s, period: %llu ms\n", led_state_names[led_state],  2 * half_period_us / 1000);
+    printf("led: %s, period: %u ms\n", led_state_names[led_state],  (unsigned int) led_task_get_period_ms());
     return;
 }
