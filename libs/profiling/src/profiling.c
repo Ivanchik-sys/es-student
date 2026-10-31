@@ -1,5 +1,6 @@
 #include "profiling.h"
 #include "pico/stdlib.h"
+#include "systime.h"
 
 // Внутреннее состояние секундомера прошивки
 typedef struct {
@@ -35,7 +36,7 @@ void profiling_start(uint32_t id)
         return;
     }
 
-    stopwatches[id].start_us = time_us_64();
+    stopwatches[id].start_us = systime_us();
     stopwatches[id].is_running = true;
 }
 

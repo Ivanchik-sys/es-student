@@ -9,10 +9,10 @@ void device_get_info(device_info_t *info)
         return;
     }
 
-    info->device_name = DEVICE_NAME;
-    info->firmware_version = FIRMWARE_VERSION;
-    info->device_project = DEVICE_PROJECT;
-    info->device_repo = DEVICE_REPO;
+    //info->device_name = DEVICE_NAME;
+   // info->firmware_version = FIRMWARE_VERSION;
+    //info->device_project = DEVICE_PROJECT;
+    //info->device_repo = DEVICE_REPO;
     
     #ifdef PICO_BOARD
     info->board_type = PICO_BOARD;

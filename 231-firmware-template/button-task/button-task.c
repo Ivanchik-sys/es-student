@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "led-task.h"
+#include "systime.h"
 
 typedef enum {
     BUTTON_STATE_RELEASED,
@@ -52,7 +53,7 @@ void button_task_handle(void)
     bool is_button_down = !gpio_get(BUTTON_PIN);
     
     // читаем часы
-    uint64_t now_us = time_us_64();
+    uint64_t now_us = systime_us();
 
     switch (button_state)
     {

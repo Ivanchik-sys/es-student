@@ -2,7 +2,7 @@
 #include "led-task.h"
 #include "button-task.h"
 #include "pi-task.h"
-#include "log.h"
+#include "logging.h"
 #include "device.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +12,8 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "profiling.h"
+#include "systime.h"
+#include "firmware.h"
 
 
 static void cmd_help(const command_t *command);
@@ -83,6 +85,11 @@ static void cmd_info(const command_t *command)
     
     device_get_info(&info);
 
+    info.device_name = FIRMWARE_NAME;
+    info.firmware_version = FIRMWARE_VERSION;
+    info.device_project = FIRMWARE_PROJECT;
+    info.device_repo = FIRMWARE_REPO;
+
     printf("project:  %s\n", info.device_name);
     printf("board:    %s\n", info.board_type);
     printf("serial:   %s\n", info.serial_number);
@@ -95,7 +102,7 @@ static void cmd_info(const command_t *command)
 
 static void cmd_uptime(const command_t *command)
 {
-    uint64_t ms = time_us_64() / 1000;
+    uint64_t ms = systime_us() / 1000;
 
     printf("uptime: %llu ms\n", ms);
     return;

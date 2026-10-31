@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include <stdint.h>
 #include <stdio.h>
+#include "systime.h"
 
 typedef enum {
     PI_NOT_STARTED,
@@ -30,7 +31,7 @@ bool pi_task_start(uint32_t n)
         pi_k = 0;
         pi_sum = 0.0;
         pi_sign = 1.0;
-        time_start = time_us_64();
+        time_start = systime_us();
         pi_state = PI_RUNNING;
         return true;
     }
@@ -75,7 +76,7 @@ void pi_task_handle(void)
             if (pi_k == pi_n) {
                 pi_result = 4.0 * pi_sum;
                 pi_state = PI_READY;
-                time_finish = time_us_64();
+                time_finish = systime_us();
             }
             break;
         case PI_READY:
