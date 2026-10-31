@@ -155,7 +155,9 @@ static void cmd_pi(const command_t *command)
 
 static void cmd_profiling(const command_t *command)
 {
-
+#if !PROFILING_ENABLED
+    printf("profiling is disabled in this build\n");
+#else
     profiling_result_t res;
 
     for (uint32_t i = 0; i < STOPWATCHES_COUNT; i++)
@@ -167,10 +169,11 @@ static void cmd_profiling(const command_t *command)
                 mean_us = (double)res.total_us / res.count;
             }
 
-            printf("%-10s count %-10lu mean %-5.2f us  max %llu us\n", 
+            printf("%-10s count %-10lu mean %-13.2f us  max %llu us\n", 
                    res.name, (unsigned long)res.count, mean_us, res.max_us);
         }
     }
+#endif
 }
 
 static void cmd_profiling_reset(const command_t *command)

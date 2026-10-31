@@ -30,6 +30,8 @@ void profiling_stopwatch_init(uint32_t id, const char *name)
     stopwatches[id].is_running = false;
 }
 
+#if PROFILING_ENABLED
+
 void profiling_start(uint32_t id)
 {
     if (id >= STOPWATCHES_COUNT || !stopwatches[id].is_initialized) {
@@ -59,22 +61,28 @@ void profiling_stop(uint32_t id)
     stopwatches[id].is_running = false;
 }
 
+#endif
+
 bool profiling_get(uint32_t id, profiling_result_t *result)
 {
+#if !PROFILING_ENABLED
+    (void)id; (void)result;
+    return false;
+#else
     if (id >= STOPWATCHES_COUNT || !stopwatches[id].is_initialized || result == NULL) {
         return false;
     }
-
     result->name = stopwatches[id].name;
     result->count = stopwatches[id].count;
     result->total_us = stopwatches[id].total_us;
     result->max_us = stopwatches[id].max_us;
-
     return true;
+#endif
 }
 
 void profiling_reset(void)
 {
+#if PROFILING_ENABLED
     for (uint32_t i = 0; i < STOPWATCHES_COUNT; i++) {
         if (stopwatches[i].is_initialized) {
             stopwatches[i].start_us = 0;
@@ -84,4 +92,5 @@ void profiling_reset(void)
             stopwatches[i].is_running = false;
         }
     }
+#endif
 }
