@@ -6,11 +6,11 @@
 #include "pi-task.h"
 #include "api.h"
 #include "button-task.h"
-#include "device.h"
-#include "systime.h"
-#include "profiling.h"
-#include "logging.h"
-#include "stdio-text-protocol.h"
+#include "device/device.h"
+#include "systime/systime.h"
+#include "profiling/profiling.h"
+#include "logging/log.h"
+#include "stdio-text-protocol/stdio-text-protocol.h"
 #include "firmware.h"
 
 typedef enum {

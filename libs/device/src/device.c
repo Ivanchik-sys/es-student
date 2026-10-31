@@ -1,4 +1,4 @@
-#include "device.h"
+#include "device/device.h"
 #include "pico/unique_id.h"
 #include "pico/stdlib.h"
 #include "hardware/regs/sysinfo.h"

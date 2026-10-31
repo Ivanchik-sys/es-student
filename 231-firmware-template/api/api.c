@@ -2,8 +2,8 @@
 #include "led-task.h"
 #include "button-task.h"
 #include "pi-task.h"
-#include "logging.h"
-#include "device.h"
+#include "logging/log.h"
+#include "device/device.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,8 +11,8 @@
 #include <errno.h>
 #include "pico/stdlib.h"
 #include "pico/time.h"
-#include "profiling.h"
-#include "systime.h"
+#include "profiling/profiling.h"
+#include "systime/systime.h"
 #include "firmware.h"
 
 

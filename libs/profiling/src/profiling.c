@@ -1,6 +1,6 @@
-#include "profiling.h"
+#include "profiling/profiling.h"
 #include "pico/stdlib.h"
-#include "systime.h"
+#include "systime/systime.h"
 
 // Внутреннее состояние секундомера прошивки
 typedef struct {
