@@ -1,17 +1,15 @@
-#include "led-task.h"
 #include <stdio.h>
-#include <string.h>
-#include "pico/stdlib.h"
-#include "pico/time.h"
-#include "pi-task.h"
-#include "api.h"
-#include "button-task.h"
-#include "device/device.h"
-#include "systime/systime.h"
+
+#include "led-task/led-task.h"
+#include "pi-task/pi-task.h"
+#include "api/api.h"
+#include "button-task/button-task.h"
+
 #include "profiling/profiling.h"
 #include "logging/log.h"
 #include "stdio-text-protocol/stdio-text-protocol.h"
 #include "firmware.h"
+#include "platform/platform.h"
 
 typedef enum {
     PROFILING_LOOP,
@@ -24,11 +22,9 @@ typedef enum {
 
 int main()
 {
-    stdio_text_protocol_init();   
-
+    platform_init();
     led_task_init();
-
-    button_task_init();
+    button_task_init(led_task_next_state);
 
     profiling_stopwatch_init(PROFILING_LOOP, "loop");
     profiling_stopwatch_init(PROFILING_COMMAND, "command");

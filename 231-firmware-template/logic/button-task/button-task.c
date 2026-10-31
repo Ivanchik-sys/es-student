@@ -1,9 +1,8 @@
-#include "button-task.h"
-#include "hardware/gpio.h"
+#include "button-task/button-task.h"
 #include <stdio.h>
-#include "pico/stdlib.h"
-#include "led-task.h"
 #include "systime/systime.h"
+#include "platform/platform.h"
+
 
 typedef enum {
     BUTTON_STATE_RELEASED,
@@ -12,10 +11,9 @@ typedef enum {
     BUTTON_STATE_RELEASE_Q
 } button_state_t;
 
-static uint BUTTON_PIN = 15;
 static button_state_t button_state;
 static uint64_t button_timer = 0;
-static uint button_presses = 0;
+static uint32_t button_presses = 0;
 static uint64_t debounce = 20000;
 
 static const char *button_state_names[] = {
@@ -25,12 +23,15 @@ static const char *button_state_names[] = {
     "pressed",
 };
 
-void button_task_init(void)
+static button_task_callback_t press_callback = NULL;
+
+void button_task_init(button_task_callback_t on_press)
 {
-    gpio_init(BUTTON_PIN);
-    gpio_set_dir(BUTTON_PIN, GPIO_IN);
-    gpio_pull_up(BUTTON_PIN);
     button_state = BUTTON_STATE_RELEASED;
+    button_timer = 0;
+    button_presses = 0;
+    
+    press_callback = on_press;
 }
 
 
@@ -50,7 +51,7 @@ unsigned int button_task_get_press_count(void)
 void button_task_handle(void)
 {
     // читаем уровень: нажатая кнопка замыкает вывод на землю и даёт ноль
-    bool is_button_down = !gpio_get(BUTTON_PIN);
+    bool is_button_down = platform_button_read();
     
     // читаем часы
     uint64_t now_us = systime_us();
@@ -76,7 +77,10 @@ void button_task_handle(void)
                 
                     // СТРОГО ПРИ ПЕРЕХОДЕ: увеличиваем счётчик и переключаем светодиод
                     button_presses++;
-                    led_task_next_state(); 
+                     // ВАЖНО: Фиксируем нажатие и вызываем колбэк прибора!
+                    if (press_callback != NULL) 
+                        press_callback();
+                    
                 }
             } 
             else 

@@ -1,11 +1,12 @@
-#include "led-task.h"
+#include "led-task/led-task.h"
 #include "systime/systime.h"
+#include "platform/platform.h"
 
 #include <stdio.h>
-#include "pico/stdlib.h"
 
 // Состояние задачи: внутреннее связывание, только для этого файла
 static led_state_t led_state;
+static bool led_is_on = false;
 static uint64_t half_period_us = 500000;
 static uint64_t last_toggle_us = 0;
 
@@ -15,16 +16,14 @@ static const char *led_state_names[] = {
     "blink",
 };
 
-static void led_set(bool on)
+static void led_set(bool state)
 {
-    gpio_put(PICO_DEFAULT_LED_PIN, on);
+    led_is_on = state;
+    platform_led_set(state);
 }
 
 void led_task_init(void)
 {
-    gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-    
     led_task_set_state(LED_STATE_ON);
 }
 
@@ -36,7 +35,8 @@ void led_task_handle(void)
         break;
     case LED_STATE_BLINK:
         if (systime_period_elapsed(&last_toggle_us, half_period_us)) {
-            gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get(PICO_DEFAULT_LED_PIN));
+            led_is_on = !led_is_on;
+            platform_led_set(led_is_on);
         }
         break;
     }

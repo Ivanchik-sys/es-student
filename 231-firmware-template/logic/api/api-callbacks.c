@@ -1,20 +1,19 @@
-#include "api.h"
-#include "led-task.h"
-#include "button-task.h"
-#include "pi-task.h"
+#include "api/api.h"
+#include "api/api-commands.h"
+#include "led-task/led-task.h"
+#include "button-task/button-task.h"
+#include "pi-task/pi-task.h"
 #include "logging/log.h"
 #include "device/device.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include "pico/stdlib.h"
-#include "pico/time.h"
+#include "firmware.h"
+#include "device/device.h"
 #include "profiling/profiling.h"
 #include "systime/systime.h"
-#include "firmware.h"
-
+#include <stdio.h>
 
 static void cmd_help(const command_t *command);
 static void cmd_info(const command_t *command);
@@ -28,6 +27,24 @@ static void cmd_led_disable(const command_t *command);
 static void cmd_led_blink(const command_t *command);
 static void cmd_led_period(const command_t *command);
 static void cmd_button(const command_t *command);
+
+const api_command_t api_commands[] = {
+    { "help", "list of commands", cmd_help},
+    { "info", "device passport", cmd_info },
+    { "uptime", "time since reset", cmd_uptime },
+    { "pi_start", "start pi calculation: pi_start [terms]", cmd_pi_start },
+    { "pi", "pi calculation state", cmd_pi },
+    { "profiling", "superloop iteration: average and maximum", cmd_profiling },
+    { "profiling_reset", "reset maximum iteration", cmd_profiling_reset },
+    { "led_enable", "switch led to ON", cmd_led_enable},
+    { "led_disable", "switch led to OFF", cmd_led_disable},
+    { "led_blink", "switch led to BLINK", cmd_led_blink},
+    { "led_period", "set led period in ms: led_period [period]", cmd_led_period},
+    { "button", "button state and press count", cmd_button},
+};
+
+const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
+
 
 // Число без знака из десятичной записи. false — в записи не только цифры
 // или число не помещается в uint32_t.
@@ -53,26 +70,9 @@ static bool parse_u32(const char *text, uint32_t *value)
     return true;
 }
 
-const api_command_t api_commands[] = {
-    { "help", "list of commands", cmd_help},
-    { "info", "device passport", cmd_info },
-    { "uptime", "time since reset", cmd_uptime },
-    { "pi_start", "start pi calculation: pi_start [terms]", cmd_pi_start },
-    { "pi", "pi calculation state", cmd_pi },
-    { "profiling", "superloop iteration: average and maximum", cmd_profiling },
-    { "profiling_reset", "reset maximum iteration", cmd_profiling_reset },
-    { "led_enable", "switch led to ON", cmd_led_enable},
-    { "led_disable", "switch led to OFF", cmd_led_disable},
-    { "led_blink", "switch led to BLINK", cmd_led_blink},
-    { "led_period", "set led period in ms: led_period [period]", cmd_led_period},
-    { "button", "button state and press count", cmd_button},
-};
-
-const uint api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
-
 static void cmd_help(const command_t *command)
 {
-    for (uint i = 0; i < api_command_count; i++) 
+    for (uint32_t i = 0; i < api_command_count; i++) 
     {
         printf("%-16s %s\n", api_commands[i].name, api_commands[i].help);
     }
@@ -110,7 +110,7 @@ static void cmd_uptime(const command_t *command)
 
 // прикидка: за член ряда 4 операции с double, 175 + 110 + 190 + 110 = 585 тактов;
 // 1 000 000 членов по 585 тактов при 125 МГц — около 4,7 с
-const uint CALC_PI_TERMS = 1000000;
+const uint32_t CALC_PI_TERMS = 1000000;
 
 static void cmd_pi_start(const command_t *command)
 {
@@ -230,25 +230,4 @@ static void cmd_led_period(const command_t *command)
 static void cmd_button(const command_t *command)
 {
     printf("button: %s, presses: %u\n", button_task_is_pressed()?"pressed":"released",  button_task_get_press_count());
-}
-
-
-void api_handle(const command_t *command)
-{
-    if(command->truncated)
-    {
-        printf("error: command longer than 63 characters or 4 arguments\n");
-        return;
-    }
-
-    for (uint i = 0; i < api_command_count; i++)
-    {
-        if (strcmp(command->name, api_commands[i].name) == 0)
-        {
-            api_commands[i].callback(command);
-            return;
-        }
-    }
-
-    printf("error: unknown command: '%s', try help\n", command->name);
 }
