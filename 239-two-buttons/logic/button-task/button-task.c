@@ -1,19 +1,24 @@
 #include "button-task/button-task.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include "systime/systime.h"
 #include "platform/platform.h"
 
 static uint64_t debounce = 20000;
+static uint64_t period_press_long = 1000000;
 
 static button_params_t buttons[BUTTON_COUNT];
 
-void button_task_init(uint32_t id, button_task_callback_t on_press)
+void button_task_init(uint32_t id, button_task_callback_t on_press_short, button_task_callback_t on_press_long)
 {
     buttons[id].state = BUTTON_STATE_RELEASED;
     buttons[id].timer = 0;
     buttons[id].presses = 0;
-    buttons[id].press_callback = on_press;
+    buttons[id].press_callback_short = on_press_short;
+    buttons[id].press_callback_long = on_press_long;
+    buttons[id].timer_long = 0;
+    buttons[id].press_long = false;
 }
 
 bool button_task_is_pressed(uint32_t id)
@@ -28,10 +33,8 @@ unsigned int button_task_get_press_count(uint32_t id)
 
 void button_task_handle(uint32_t id)
 {
-    // читаем уровень: нажатая кнопка замыкает вывод на землю и даёт ноль
     bool is_button_down = platform_button_read(id);
     
-    // читаем часы
     uint64_t now_us = systime_us();
 
     switch (buttons[id].state)
@@ -52,12 +55,13 @@ void button_task_handle(uint32_t id)
                 if (now_us - buttons[id].timer >= debounce) 
                 {
                     buttons[id].state = BUTTON_STATE_PRESSED;
+                    buttons[id].timer_long = buttons[id].timer;
                 
                     // СТРОГО ПРИ ПЕРЕХОДЕ: увеличиваем счётчик и переключаем светодиод
                     buttons[id].presses++;
                      // ВАЖНО: Фиксируем нажатие и вызываем колбэк прибора!
-                    if (buttons[id].press_callback != NULL) 
-                        buttons[id].press_callback();
+                    if (buttons[id].press_callback_short != NULL) 
+                        buttons[id].press_callback_short();
                     
                 }
             } 
@@ -75,6 +79,12 @@ void button_task_handle(uint32_t id)
                 buttons[id].timer = now_us;
                 buttons[id].state = BUTTON_STATE_RELEASE_Q;
             }
+            else if(!buttons[id].press_long && now_us - buttons[id].timer_long >= period_press_long)
+            {
+                buttons[id].press_long = true;
+                if (buttons[id].press_callback_long != NULL) 
+                    buttons[id].press_callback_long();
+            }
             break;
 
         case BUTTON_STATE_RELEASE_Q:
@@ -84,6 +94,7 @@ void button_task_handle(uint32_t id)
                 if (now_us - buttons[id].timer >= debounce) 
                 {
                     buttons[id].state = BUTTON_STATE_RELEASED;
+                    buttons[id].press_long = false;
                 }
             } 
             else 

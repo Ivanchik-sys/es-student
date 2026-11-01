@@ -124,3 +124,8 @@ void led_period_250_500_1000(void)
     }
 
 }
+
+void led_task_blink(void)
+{
+    led_task_set_state(LED_STATE_BLINK);
+}

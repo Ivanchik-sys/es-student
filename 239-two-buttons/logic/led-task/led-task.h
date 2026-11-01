@@ -23,3 +23,4 @@ uint32_t led_task_get_period_ms(void);
 
 void led_task_next_state(void);
 void led_period_250_500_1000(void);
+void led_task_blink(void);
