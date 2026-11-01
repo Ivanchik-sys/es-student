@@ -3,17 +3,11 @@
 #include <stdio.h>
 #include "systime/systime.h"
 
-typedef enum {
-    PI_NOT_STARTED,
-    PI_RUNNING,
-    PI_READY
-} pi_state_t;
-
 // 125e6 тактов/s * 0.5 * 1e-3 s / 585 тактов ~= 106 членов
 #define PI_TERMS_PER_CALL 100
 
 // Состояние расчёта: должно пережить возврат из обработчика
-static pi_state_t pi_state;
+static pi_state_t pi_state = PI_NOT_STARTED;
 static uint32_t pi_k;
 static uint32_t pi_n;
 static double pi_sum;
@@ -80,5 +74,10 @@ void pi_task_handle(void)
             break;
     }
     
+}
+
+pi_state_t pi_task_get_state(void)
+{
+    return pi_state;
 }
 

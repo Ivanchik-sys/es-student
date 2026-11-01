@@ -151,9 +151,28 @@ static void cmd_pi_start(const command_t *command)
 static void cmd_pi(const command_t *command)
 {
     double result;
-    unsigned int time;
+    unsigned int time_ms;
     
-    pi_task_get_result(&result, &time);
+    pi_state_t state = pi_task_get_state();
+    
+    switch (state)
+    {
+        case PI_NOT_STARTED:
+            printf("pi: not started\n");
+            break;
+            
+        case PI_RUNNING:
+            printf("pi: running\n");
+            break;
+            
+        case PI_READY:
+            if (pi_task_get_result(&result, &time_ms))
+            {
+                // Вывод строго по формату тестов приложения Б
+                printf("pi: %f in %u ms\n", result, time_ms);
+            }
+            break;
+    }
 }
 
 static void cmd_profiling(const command_t *command)
