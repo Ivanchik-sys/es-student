@@ -35,9 +35,6 @@ add_library(logic STATIC
     logic/pi-task/pi-task.c
 )
 
-target_compile_definitions(logic PRIVATE
-    PROFILING_ENABLED=1
-)
 
 target_include_directories(logic PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/logic

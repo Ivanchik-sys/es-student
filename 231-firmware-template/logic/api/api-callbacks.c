@@ -90,7 +90,10 @@ static void cmd_info(const command_t *command)
     info.device_project = FIRMWARE_PROJECT;
     info.device_repo = FIRMWARE_REPO;
 
-    printf("project:  %s\n", info.device_name);
+    printf("name:     %s\n", info.device_name);
+    printf("version:  %s\n", info.firmware_version);
+    printf("project:  %s\n", info.device_project);
+    printf("repo:     %s\n", info.device_repo);
     printf("board:    %s\n", info.board_type);
     printf("serial:   %s\n", info.serial_number);
     printf("chip:     manufacturer 0x%03lx, part 0x%04lx, revision %lu\n", 
@@ -138,7 +141,7 @@ static void cmd_pi_start(const command_t *command)
     }
     
     if(pi_task_start(arg))
-        printf("pi: started, %u terms\n", arg);
+        printf("pi: started, %lu terms\n", arg);
     else
         printf("error: pi is busy\n");
 
@@ -179,10 +182,12 @@ static void cmd_profiling(const command_t *command)
 static void cmd_profiling_reset(const command_t *command)
 {
 
-    // Сбрасываем метрики всех секундомеров
-    profiling_reset(); 
-    
-    printf("all stopwatches reset\n");
+    #if !PROFILING_ENABLED
+        printf("profiling is disabled in this build\n");
+    #else
+        profiling_reset(); 
+        printf("all stopwatches reset\n");
+    #endif
 }
 
 static void cmd_led_enable(const command_t *command)

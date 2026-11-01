@@ -26,11 +26,13 @@ int main()
     led_task_init();
     button_task_init(led_task_next_state);
 
-    profiling_stopwatch_init(PROFILING_LOOP, "loop");
-    profiling_stopwatch_init(PROFILING_COMMAND, "command");
-    profiling_stopwatch_init(PROFILING_LED, "led");
-    profiling_stopwatch_init(PROFILING_BUTTON, "button");
-    profiling_stopwatch_init(PROFILING_PI, "pi");
+    #if PROFILING_ENABLED
+        profiling_stopwatch_init(PROFILING_LOOP, "loop");
+        profiling_stopwatch_init(PROFILING_COMMAND, "command");
+        profiling_stopwatch_init(PROFILING_LED, "led");
+        profiling_stopwatch_init(PROFILING_BUTTON, "button");
+        profiling_stopwatch_init(PROFILING_PI, "pi");
+    #endif
 
     LOG_INF("%s %s\n", FIRMWARE_NAME, FIRMWARE_VERSION);
 

@@ -48,7 +48,7 @@ void profiling_stop(uint32_t id)
         return;
     }
 
-    uint64_t now_us = time_us_64();
+    uint64_t now_us = systime_us();
     uint64_t duration = now_us - stopwatches[id].start_us;
 
     stopwatches[id].total_us += duration;
