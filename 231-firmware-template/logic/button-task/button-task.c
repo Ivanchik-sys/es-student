@@ -16,13 +16,6 @@ static uint64_t button_timer = 0;
 static uint32_t button_presses = 0;
 static uint64_t debounce = 20000;
 
-static const char *button_state_names[] = {
-    "released", 
-    "released",
-    "pressed",
-    "pressed",
-};
-
 static button_task_callback_t press_callback = NULL;
 
 void button_task_init(button_task_callback_t on_press)

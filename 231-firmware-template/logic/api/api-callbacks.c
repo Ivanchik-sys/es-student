@@ -90,13 +90,13 @@ static void cmd_info(const command_t *command)
     info.device_project = FIRMWARE_PROJECT;
     info.device_repo = FIRMWARE_REPO;
 
-    printf("name:     %s\n", info.device_name);
-    printf("version:  %s\n", info.firmware_version);
-    printf("project:  %s\n", info.device_project);
-    printf("repo:     %s\n", info.device_repo);
-    printf("board:    %s\n", info.board_type);
-    printf("serial:   %s\n", info.serial_number);
-    printf("chip:     manufacturer 0x%03lx, part 0x%04lx, revision %lu\n", 
+    printf("name: %s\n", info.device_name);
+    printf("version: %s\n", info.firmware_version);
+    printf("project: %s\n", info.device_project);
+    printf("repo: %s\n", info.device_repo);
+    printf("board: %s\n", info.board_type);
+    printf("serial: %s\n", info.serial_number);
+    printf("chip: manufacturer 0x%03lx, part 0x%04lx, revision %lu\n", 
            info.chip_manufacturer, info.chip_part, info.chip_revision);
     printf("pico-sdk: %s\n", info.sdk_version);
 
@@ -172,7 +172,7 @@ static void cmd_profiling(const command_t *command)
                 mean_us = (double)res.total_us / res.count;
             }
 
-            printf("%-10s count %-10lu mean %-13.2f us  max %llu us\n", 
+            printf("%s count %lu mean %.2f us max %llu us\n", 
                    res.name, (unsigned long)res.count, mean_us, res.max_us);
         }
     }
@@ -186,28 +186,43 @@ static void cmd_profiling_reset(const command_t *command)
         printf("profiling is disabled in this build\n");
     #else
         profiling_reset(); 
-        printf("all stopwatches reset\n");
+        printf("profiling reset\n");
     #endif
 }
 
 static void cmd_led_enable(const command_t *command)
 {
     led_task_set_state(LED_STATE_ON);
-    print_led_state();
+    
+    led_state_t state = led_task_get_state();
+    const char *name = led_task_get_state_name(state);
+    uint32_t period = led_task_get_period_ms();
+
+    printf("led: %s, period %u ms\n", name, (unsigned int)period);
     return;
 }
 
 static void cmd_led_disable(const command_t *command)
 {
     led_task_set_state(LED_STATE_OFF);
-    print_led_state();
+
+    led_state_t state = led_task_get_state();
+    const char *name = led_task_get_state_name(state);
+    uint32_t period = led_task_get_period_ms();
+    
+    printf("led: %s, period %u ms\n", name, (unsigned int)period);
     return;
 }
 
 static void cmd_led_blink(const command_t *command)
 {
     led_task_set_state(LED_STATE_BLINK);
-    print_led_state();
+
+    led_state_t state = led_task_get_state();
+    const char *name = led_task_get_state_name(state);
+    uint32_t period = led_task_get_period_ms();
+
+    printf("led: %s, period %u ms\n", name, (unsigned int)period);
     return;
 }
 
@@ -228,11 +243,15 @@ static void cmd_led_period(const command_t *command)
         return;
     }
 
-    // ответ: состояние и период светодиода
-    print_led_state();
+    led_state_t state = led_task_get_state();
+    const char *name = led_task_get_state_name(state);
+    uint32_t period = led_task_get_period_ms();
+
+
+    printf("led: %s, period %u ms\n", name, (unsigned int)period);
 }
 
 static void cmd_button(const command_t *command)
 {
-    printf("button: %s, presses: %u\n", button_task_is_pressed()?"pressed":"released",  button_task_get_press_count());
+    printf("button: %s, presses %u\n", button_task_is_pressed()?"pressed":"released",  button_task_get_press_count());
 }

@@ -22,5 +22,5 @@ void api_handle(const command_t *command)
         }
     }
 
-    printf("error: unknown command: '%s', try help\n", command->name);
+    printf("error: unknown command '%s', try help\n", command->name);
 }

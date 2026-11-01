@@ -37,22 +37,20 @@ bool pi_task_start(uint32_t n)
     return false;
 }
 
-bool pi_task_get_result(double *result, unsigned int *time)
+bool pi_task_get_result(double *result, unsigned int *time_ms)
 {
-    switch(pi_state)
-    {
-        case PI_NOT_STARTED:
-            printf("pi: not started\n");
-            return false;
-        case PI_RUNNING:
-            printf("pi: running\n");
-            return false;
-        case PI_READY:
+    if (pi_state == PI_READY) {
+        if (result) 
+        {
             *result = pi_result;
-            *time = (unsigned int) ((time_finish - time_start) / 1000);
-            printf("pi: %f in %u ms\n", *result, *time);
-            return true;
+        }
+        if (time_ms) 
+        {
+            *time_ms = (unsigned int)((time_finish - time_start) / 1000);
+        }
+        return true;
     }
+    return false;
 }
 
 void pi_task_handle(void)

@@ -16,6 +16,12 @@ static const char *led_state_names[] = {
     "blink",
 };
 
+const char* led_task_get_state_name(led_state_t state)
+{
+    if (state < 0 || state > 3) return "unknown";
+    return led_state_names[state];
+}
+
 static void led_set(bool state)
 {
     led_is_on = state;
@@ -81,12 +87,6 @@ bool led_task_set_period_ms(uint32_t period_ms)
 uint32_t led_task_get_period_ms(void)
 {
     return 2 * half_period_us / 1000;
-}
-
-void print_led_state(void)
-{
-    printf("led: %s, period: %u ms\n", led_state_names[led_state],  (unsigned int) led_task_get_period_ms());
-    return;
 }
 
 void led_task_next_state(void)

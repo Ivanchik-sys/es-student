@@ -1,7 +1,7 @@
 #pragma once
 
 #define FIRMWARE_NAME "es-led-module"
-#define FIRMWARE_VERSION "2.3.1"
+#define FIRMWARE_VERSION "1.0.0"
 
 #define FIRMWARE_PROJECT "231-firmware-template"
 #define FIRMWARE_REPO "https://github.com/Ivanchik-sys/es-student"

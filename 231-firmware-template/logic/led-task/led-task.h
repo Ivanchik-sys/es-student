@@ -16,9 +16,9 @@ void led_task_handle(void);
 void led_task_set_state(led_state_t state);
 led_state_t led_task_get_state(void);
 
-// false — период не принят
 bool led_task_set_period_ms(uint32_t period_ms);
 uint32_t led_task_get_period_ms(void);
 
-void print_led_state(void);
 void led_task_next_state(void);
+
+const char* led_task_get_state_name(led_state_t state);
