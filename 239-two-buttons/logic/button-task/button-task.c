@@ -5,6 +5,23 @@
 #include "systime/systime.h"
 #include "platform/platform.h"
 
+typedef enum {
+    BUTTON_STATE_RELEASED,
+    BUTTON_STATE_PRESS_Q,
+    BUTTON_STATE_PRESSED,
+    BUTTON_STATE_RELEASE_Q
+} button_state_t;
+
+typedef struct {
+    button_state_t state;
+    uint64_t timer;
+    uint32_t presses;
+    button_task_callback_t press_callback_short;
+    button_task_callback_t press_callback_long;
+    uint64_t timer_long;
+    bool press_long;
+} button_params_t;
+
 static uint64_t debounce = 20000;
 static uint64_t period_press_long = 1000000;
 
