@@ -12,4 +12,4 @@ void button_task_init(uint32_t id, button_task_callback_t on_press_short, button
 bool button_task_is_pressed(uint32_t id);
 unsigned int button_task_get_press_count(uint32_t id);
 
-void button_task_handle(uint32_t id);
+void button_task_handle();

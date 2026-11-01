@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define STOPWATCHES_COUNT 6
+#define STOPWATCHES_COUNT 5
 
 typedef struct {
     const char *name;

@@ -15,8 +15,7 @@ typedef enum {
     PROFILING_LOOP,
     PROFILING_COMMAND,
     PROFILING_LED,
-    PROFILING_BUTTON_1,
-    PROFILING_BUTTON_2,
+    PROFILING_BUTTON,
     PROFILING_PI,
     PROFILING_MAX_STOPWATCHES
 } profiling_id_t;
@@ -32,8 +31,7 @@ int main()
         profiling_stopwatch_init(PROFILING_LOOP, "loop");
         profiling_stopwatch_init(PROFILING_COMMAND, "command");
         profiling_stopwatch_init(PROFILING_LED, "led");
-        profiling_stopwatch_init(PROFILING_BUTTON_1, "button 1");
-        profiling_stopwatch_init(PROFILING_BUTTON_2, "button 2");
+        profiling_stopwatch_init(PROFILING_BUTTON, "button");
         profiling_stopwatch_init(PROFILING_PI, "pi");
     #endif
 
@@ -47,13 +45,9 @@ int main()
         led_task_handle();
         profiling_stop(PROFILING_LED);
 
-        profiling_start(PROFILING_BUTTON_1);
-        button_task_handle(0);
-        profiling_stop(PROFILING_BUTTON_1);
-
-        profiling_start(PROFILING_BUTTON_2);
-        button_task_handle(1);
-        profiling_stop(PROFILING_BUTTON_2);
+        profiling_start(PROFILING_BUTTON);
+        button_task_handle();
+        profiling_stop(PROFILING_BUTTON);
 
         profiling_start(PROFILING_PI);
         pi_task_handle();

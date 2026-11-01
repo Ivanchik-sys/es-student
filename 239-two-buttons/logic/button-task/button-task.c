@@ -48,77 +48,82 @@ unsigned int button_task_get_press_count(uint32_t id)
     return buttons[id].presses;
 }
 
-void button_task_handle(uint32_t id)
+void button_task_handle()
 {
-    bool is_button_down = platform_button_read(id);
-    
-    uint64_t now_us = systime_us();
-
-    switch (buttons[id].state)
+    for(uint32_t id = 0; id < BUTTON_COUNT; id++)
     {
-        case BUTTON_STATE_RELEASED:
         
-            if (is_button_down) 
-            {
-                buttons[id].timer = now_us;
-                buttons[id].state = BUTTON_STATE_PRESS_Q;
-            }
-            break;
-
-        case BUTTON_STATE_PRESS_Q:
-            if (is_button_down) 
-            {
-                // Если время дребезга прошло и кнопка всё ещё нажата
-                if (now_us - buttons[id].timer >= debounce) 
+        bool is_button_down = platform_button_read(id);
+        
+        uint64_t now_us = systime_us();
+        
+        switch (buttons[id].state)
+        {
+            case BUTTON_STATE_RELEASED:
+            
+                if (is_button_down) 
                 {
-                    buttons[id].state = BUTTON_STATE_PRESSED;
-                    buttons[id].timer_long = buttons[id].timer;
-                
-                    // СТРОГО ПРИ ПЕРЕХОДЕ: увеличиваем счётчик и переключаем светодиод
-                    buttons[id].presses++;
-                     // ВАЖНО: Фиксируем нажатие и вызываем колбэк прибора!
-                    if (buttons[id].press_callback_short != NULL) 
-                        buttons[id].press_callback_short();
+                    buttons[id].timer = now_us;
+                    buttons[id].state = BUTTON_STATE_PRESS_Q;
+                }
+                break;
+            
+            case BUTTON_STATE_PRESS_Q:
+                if (is_button_down) 
+                {
+                    // Если время дребезга прошло и кнопка всё ещё нажата
+                    if (now_us - buttons[id].timer >= debounce) 
+                    {
+                        buttons[id].state = BUTTON_STATE_PRESSED;
+                        buttons[id].timer_long = buttons[id].timer;
                     
-                }
-            } 
-            else 
-            {
-                // Если кнопку отпустили раньше времени — это был шум
-                buttons[id].state = BUTTON_STATE_RELEASED;
-            }
-            break;
-
-        case BUTTON_STATE_PRESSED:
-            // Если кнопку отпустили, запускаем таймер дребезга для отпускания
-            if (!is_button_down) 
-            {
-                buttons[id].timer = now_us;
-                buttons[id].state = BUTTON_STATE_RELEASE_Q;
-            }
-            else if(!buttons[id].press_long && now_us - buttons[id].timer_long >= period_press_long)
-            {
-                buttons[id].press_long = true;
-                if (buttons[id].press_callback_long != NULL) 
-                    buttons[id].press_callback_long();
-            }
-            break;
-
-        case BUTTON_STATE_RELEASE_Q:
-            if (!is_button_down) 
-            {
-                // Если время дребезга прошло и кнопку действительно отпустили
-                if (now_us - buttons[id].timer >= debounce) 
+                        // СТРОГО ПРИ ПЕРЕХОДЕ: увеличиваем счётчик и переключаем светодиод
+                        buttons[id].presses++;
+                         // ВАЖНО: Фиксируем нажатие и вызываем колбэк прибора!
+                        if (buttons[id].press_callback_short != NULL) 
+                            buttons[id].press_callback_short();
+                        
+                    }
+                } 
+                else 
                 {
+                    // Если кнопку отпустили раньше времени — это был шум
                     buttons[id].state = BUTTON_STATE_RELEASED;
-                    buttons[id].press_long = false;
                 }
-            } 
-            else 
-            {
-                // Если кнопку снова зажали во время отпускания
-                buttons[id].state = BUTTON_STATE_PRESSED;
-            }
-            break;
+                break;
+            
+            case BUTTON_STATE_PRESSED:
+                // Если кнопку отпустили, запускаем таймер дребезга для отпускания
+                if (!is_button_down) 
+                {
+                    buttons[id].timer = now_us;
+                    buttons[id].state = BUTTON_STATE_RELEASE_Q;
+                }
+                else if(!buttons[id].press_long && now_us - buttons[id].timer_long >= period_press_long)
+                {
+                    buttons[id].press_long = true;
+                    if (buttons[id].press_callback_long != NULL) 
+                        buttons[id].press_callback_long();
+                }
+                break;
+            
+            case BUTTON_STATE_RELEASE_Q:
+                if (!is_button_down) 
+                {
+                    // Если время дребезга прошло и кнопку действительно отпустили
+                    if (now_us - buttons[id].timer >= debounce) 
+                    {
+                        buttons[id].state = BUTTON_STATE_RELEASED;
+                        buttons[id].press_long = false;
+                    }
+                } 
+                else 
+                {
+                    // Если кнопку снова зажали во время отпускания
+                    buttons[id].state = BUTTON_STATE_PRESSED;
+                }
+                break;
+        }
+    
     }
 }
