@@ -23,12 +23,15 @@ typedef struct {
 } button_params_t;
 
 static uint64_t debounce = 20000;
-static uint64_t period_press_long = 1000000;
+static uint64_t t_press_long = 1000000;
 
 static button_params_t buttons[BUTTON_COUNT];
 
 void button_task_init(uint32_t id, button_task_callback_t on_press_short, button_task_callback_t on_press_long)
 {
+    if (id >= BUTTON_COUNT || id < 0) 
+        return;
+    
     buttons[id].state = BUTTON_STATE_RELEASED;
     buttons[id].timer = 0;
     buttons[id].presses = 0;
@@ -71,15 +74,14 @@ void button_task_handle()
             case BUTTON_STATE_PRESS_Q:
                 if (is_button_down) 
                 {
-                    // Если время дребезга прошло и кнопка всё ещё нажата
+                    
                     if (now_us - buttons[id].timer >= debounce) 
                     {
                         buttons[id].state = BUTTON_STATE_PRESSED;
                         buttons[id].timer_long = buttons[id].timer;
-                    
-                        // СТРОГО ПРИ ПЕРЕХОДЕ: увеличиваем счётчик и переключаем светодиод
+                        
                         buttons[id].presses++;
-                         // ВАЖНО: Фиксируем нажатие и вызываем колбэк прибора!
+
                         if (buttons[id].callback_short != NULL) 
                             buttons[id].callback_short();
 
@@ -87,19 +89,17 @@ void button_task_handle()
                 } 
                 else 
                 {
-                    // Если кнопку отпустили раньше времени — это был шум
                     buttons[id].state = BUTTON_STATE_RELEASED;
                 }
                 break;
 
             case BUTTON_STATE_PRESSED:
-                // Если кнопку отпустили, запускаем таймер дребезга для отпускания
                 if (!is_button_down) 
                 {
                     buttons[id].timer = now_us;
                     buttons[id].state = BUTTON_STATE_RELEASE_Q;
                 }
-                else if(!buttons[id].press_long && now_us - buttons[id].timer_long >= period_press_long)
+                else if(!buttons[id].press_long && now_us - buttons[id].timer_long >= t_press_long)
                 {
                     buttons[id].press_long = true;
                     if (buttons[id].callback_long != NULL) 
@@ -110,7 +110,6 @@ void button_task_handle()
             case BUTTON_STATE_RELEASE_Q:
                 if (!is_button_down) 
                 {
-                    // Если время дребезга прошло и кнопку действительно отпустили
                     if (now_us - buttons[id].timer >= debounce) 
                     {
                         buttons[id].state = BUTTON_STATE_RELEASED;
@@ -119,7 +118,6 @@ void button_task_handle()
                 } 
                 else 
                 {
-                    // Если кнопку снова зажали во время отпускания
                     buttons[id].state = BUTTON_STATE_PRESSED;
                 }
                 break;
