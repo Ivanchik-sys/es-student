@@ -16,8 +16,8 @@ typedef struct {
     button_state_t state;
     uint64_t timer;
     uint32_t presses;
-    button_task_callback_t press_callback_short;
-    button_task_callback_t press_callback_long;
+    button_task_callback_t callback_short;
+    button_task_callback_t callback_long;
     uint64_t timer_long;
     bool press_long;
 } button_params_t;
@@ -32,8 +32,8 @@ void button_task_init(uint32_t id, button_task_callback_t on_press_short, button
     buttons[id].state = BUTTON_STATE_RELEASED;
     buttons[id].timer = 0;
     buttons[id].presses = 0;
-    buttons[id].press_callback_short = on_press_short;
-    buttons[id].press_callback_long = on_press_long;
+    buttons[id].callback_short = on_press_short;
+    buttons[id].callback_long = on_press_long;
     buttons[id].timer_long = 0;
     buttons[id].press_long = false;
 }
@@ -56,18 +56,18 @@ void button_task_handle()
         bool is_button_down = platform_button_read(id);
         
         uint64_t now_us = systime_us();
-        
+
         switch (buttons[id].state)
         {
             case BUTTON_STATE_RELEASED:
-            
+
                 if (is_button_down) 
                 {
                     buttons[id].timer = now_us;
                     buttons[id].state = BUTTON_STATE_PRESS_Q;
                 }
                 break;
-            
+
             case BUTTON_STATE_PRESS_Q:
                 if (is_button_down) 
                 {
@@ -80,9 +80,9 @@ void button_task_handle()
                         // СТРОГО ПРИ ПЕРЕХОДЕ: увеличиваем счётчик и переключаем светодиод
                         buttons[id].presses++;
                          // ВАЖНО: Фиксируем нажатие и вызываем колбэк прибора!
-                        if (buttons[id].press_callback_short != NULL) 
-                            buttons[id].press_callback_short();
-                        
+                        if (buttons[id].callback_short != NULL) 
+                            buttons[id].callback_short();
+
                     }
                 } 
                 else 
@@ -91,7 +91,7 @@ void button_task_handle()
                     buttons[id].state = BUTTON_STATE_RELEASED;
                 }
                 break;
-            
+
             case BUTTON_STATE_PRESSED:
                 // Если кнопку отпустили, запускаем таймер дребезга для отпускания
                 if (!is_button_down) 
@@ -102,11 +102,11 @@ void button_task_handle()
                 else if(!buttons[id].press_long && now_us - buttons[id].timer_long >= period_press_long)
                 {
                     buttons[id].press_long = true;
-                    if (buttons[id].press_callback_long != NULL) 
-                        buttons[id].press_callback_long();
+                    if (buttons[id].callback_long != NULL) 
+                        buttons[id].callback_long();
                 }
                 break;
-            
+
             case BUTTON_STATE_RELEASE_Q:
                 if (!is_button_down) 
                 {
@@ -124,6 +124,6 @@ void button_task_handle()
                 }
                 break;
         }
-    
+
     }
 }
