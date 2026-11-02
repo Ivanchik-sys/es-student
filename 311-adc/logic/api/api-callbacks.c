@@ -59,7 +59,7 @@ const api_command_t api_commands[] = {
     { "button", "button state and press count", cmd_button},
     { "get_voltage", "voltage on GP26, ADC input 0", cmd_get_voltage},
     { "get_temp", "chip temperature, degrees Celsius", cmd_get_temp},
-    { "tm_start", "start telemetry", cmd_tm_start},
+    { "tm_start", "start telemetry: tm_start [<period_ms>]", cmd_tm_start},
     { "tm_stop", "stop telemetry", cmd_tm_stop},
 };
 
@@ -311,7 +311,7 @@ static void cmd_tm_start(const command_t *command)
     
     if (command->argc > 1)
     {
-        printf("error: usage tm_start [terms]\n");
+        printf("error: usage tm_start [<period_ms>]\n");
         return;
     }
 
@@ -319,7 +319,7 @@ static void cmd_tm_start(const command_t *command)
     {
         if (!parse_u32(command->argv[0], &arg))
         {
-            printf("error: usage tm_start [terms]\n");
+            printf("error: usage tm_start [<period_ms>]\n");
             return;
         }
     
