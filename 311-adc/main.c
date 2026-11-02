@@ -10,6 +10,7 @@
 #include "stdio-text-protocol/stdio-text-protocol.h"
 #include "firmware.h"
 #include "platform/platform.h"
+#include "telemetry-task/telemetry-task.h"
 
 typedef enum {
     PROFILING_LOOP,
@@ -25,6 +26,7 @@ int main()
     platform_init();
     led_task_init();
     button_task_init(led_task_next_state);
+    telemetry_task_init(api_print_telemetry);
 
     #if PROFILING_ENABLED
         profiling_stopwatch_init(PROFILING_LOOP, "loop");
@@ -51,6 +53,8 @@ int main()
         profiling_start(PROFILING_PI);
         pi_task_handle();
         profiling_stop(PROFILING_PI);
+
+        telemetry_task_handle();
         
         profiling_start(PROFILING_COMMAND);
         const command_t *command = stdio_text_protocol_handle();

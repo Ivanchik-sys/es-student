@@ -5,6 +5,7 @@
 #include "button-task/button-task.h"
 #include "pi-task/pi-task.h"
 #include "platform/platform.h"
+#include "telemetry-task/telemetry-task.h"
 
 #include "logging/log.h"
 #include "device/device.h"
@@ -32,6 +33,16 @@ static void cmd_led_period(const command_t *command);
 static void cmd_button(const command_t *command);
 static void cmd_get_voltage(const command_t *command);
 static void cmd_get_temp(const command_t *command);
+static void cmd_tm_start(const command_t *command);
+static void cmd_tm_stop(const command_t *command);
+
+// период телеметрии по умолчанию
+#define TELEMETRY_DEFAULT_PERIOD_MS 100
+
+void api_print_telemetry(const telemetry_record_t *record)
+{
+    printf("tm: %llu %.3f %.1f\n", record->time_us, record->voltage_v, record->temp_c);
+}
 
 const api_command_t api_commands[] = {
     { "help", "list of commands", cmd_help},
@@ -48,6 +59,8 @@ const api_command_t api_commands[] = {
     { "button", "button state and press count", cmd_button},
     { "get_voltage", "voltage on GP26, ADC input 0", cmd_get_voltage},
     { "get_temp", "chip temperature, degrees Celsius", cmd_get_temp},
+    { "tm_start", "start telemetry", cmd_tm_start},
+    { "tm_stop", "stop telemetry", cmd_tm_stop},
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
@@ -290,4 +303,38 @@ static void cmd_get_voltage(const command_t *command)
 static void cmd_get_temp(const command_t *command)
 {
     printf("temp: %.1f C\n", platform_temp_read());
+}
+
+static void cmd_tm_start(const command_t *command)
+{
+    uint32_t arg = 100;
+    
+    if (command->argc > 1)
+    {
+        printf("error: usage tm_start [terms]\n");
+        return;
+    }
+
+    if (command->argc == 1)
+    {
+        if (!parse_u32(command->argv[0], &arg))
+        {
+            printf("error: usage tm_start [terms]\n");
+            return;
+        }
+    
+    }
+    
+    if(telemetry_task_start(arg))
+        printf("telemetry: started, period %lu ms\n", telemetry_task_get_period_ms());
+    else
+        printf("error: period_ms must be at least 10\n");
+
+    return;
+}
+
+static void cmd_tm_stop(const command_t *command)
+{
+    printf("telemetry: stopped\n");
+    telemetry_task_stop();
 }
