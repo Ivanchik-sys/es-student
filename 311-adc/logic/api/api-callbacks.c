@@ -31,6 +31,7 @@ static void cmd_led_blink(const command_t *command);
 static void cmd_led_period(const command_t *command);
 static void cmd_button(const command_t *command);
 static void cmd_get_voltage(const command_t *command);
+static void cmd_get_temp(const command_t *command);
 
 const api_command_t api_commands[] = {
     { "help", "list of commands", cmd_help},
@@ -45,7 +46,8 @@ const api_command_t api_commands[] = {
     { "led_blink", "switch led to BLINK", cmd_led_blink},
     { "led_period", "set led period in ms: led_period [period]", cmd_led_period},
     { "button", "button state and press count", cmd_button},
-    { "get_voltage", "voltage on GP26, ADC input 0", cmd_get_voltage}
+    { "get_voltage", "voltage on GP26, ADC input 0", cmd_get_voltage},
+    { "get_temp", "chip temperature, degrees Celsius", cmd_get_temp},
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
@@ -283,4 +285,9 @@ static void cmd_button(const command_t *command)
 static void cmd_get_voltage(const command_t *command)
 {
     printf("voltage: %.3f V\n", platform_voltage_read());
+}
+
+static void cmd_get_temp(const command_t *command)
+{
+    printf("temp: %.1f C\n", platform_temp_read());
 }
