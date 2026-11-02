@@ -282,5 +282,5 @@ static void cmd_button(const command_t *command)
 
 static void cmd_get_voltage(const command_t *command)
 {
-    printf("voltage: %.8f V\n", platform_voltage_read());
+    printf("voltage: %.3f V\n", platform_voltage_read());
 }
