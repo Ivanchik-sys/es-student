@@ -35,6 +35,8 @@ static void cmd_get_voltage(const command_t *command);
 static void cmd_get_temp(const command_t *command);
 static void cmd_tm_start(const command_t *command);
 static void cmd_tm_stop(const command_t *command);
+static void cmd_charge_on(const command_t *command);
+static void cmd_charge_off(const command_t *command);
 
 // период телеметрии по умолчанию
 #define TELEMETRY_DEFAULT_PERIOD_MS 100
@@ -61,6 +63,8 @@ const api_command_t api_commands[] = {
     { "get_temp", "chip temperature, degrees Celsius", cmd_get_temp},
     { "tm_start", "start telemetry: tm_start [<period_ms>]", cmd_tm_start},
     { "tm_stop", "stop telemetry", cmd_tm_stop},
+    { "charge_on", "set 3.3V on GP22", cmd_charge_on},
+    { "charge_off", "set 0V on GP22", cmd_charge_off},
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
@@ -337,4 +341,16 @@ static void cmd_tm_stop(const command_t *command)
 {
     printf("telemetry: stopped\n");
     telemetry_task_stop();
+}
+
+static void cmd_charge_on(const command_t *command)
+{
+    platform_charge_set(true);
+    printf("charge: on\n");
+}
+
+static void cmd_charge_off(const command_t *command)
+{
+    platform_charge_set(false);
+    printf("charge: off\n");
 }

@@ -14,6 +14,9 @@
 #define ADC_VREF_V 3.3f
 #define ADC_LEVELS 4096
 
+// вывод, через резистор заряжающий конденсатор RC-цепи
+#define CHARGE_PIN 22
+
 #define PLATFORM_LED_PIN PICO_DEFAULT_LED_PIN 
 #define PLATFORM_BUTTON_PIN 15                   
 
@@ -32,6 +35,10 @@ void platform_init(void)
     adc_gpio_init(ADC_PIN);
 
     adc_set_temp_sensor_enabled(true);
+
+    gpio_init(CHARGE_PIN);
+    gpio_set_dir(CHARGE_PIN, GPIO_OUT);
+    gpio_put(CHARGE_PIN, 0);
 }
 
 void platform_led_set(bool on)
@@ -54,4 +61,9 @@ float platform_temp_read(void)
 {
     adc_select_input(ADC_TEMP_CHANNEL);
     return 27 - (adc_read() * ADC_VREF_V / ADC_LEVELS - 0.706) / 0.001721;
+}
+
+void platform_charge_set(bool on)
+{
+    gpio_put(CHARGE_PIN, on);
 }
