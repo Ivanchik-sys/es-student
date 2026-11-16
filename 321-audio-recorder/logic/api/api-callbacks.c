@@ -39,6 +39,8 @@ static void cmd_charge_on(const command_t *command);
 static void cmd_charge_off(const command_t *command);
 static void cmd_timer_blink_start(const command_t *command);
 static void cmd_timer_blink_stop(const command_t *command);
+static void cmd_cap_start(const command_t *command);
+static void cmd_cap_dump(const command_t *command);
 
 // период телеметрии по умолчанию
 #define TELEMETRY_DEFAULT_PERIOD_MS 100
@@ -69,6 +71,8 @@ const api_command_t api_commands[] = {
     { "charge_off", "set 0V on GP22", cmd_charge_off},
     { "timer_blink_start", "blink led by timer: timer_blink_start <period_ms>", cmd_timer_blink_start },
     { "timer_blink_stop", "stop timer blink, number of toggles", cmd_timer_blink_stop },
+    { "cap_start", "start capture: cap_start <N> <period_us>", cmd_cap_start },
+    { "cap_dump", "capture results", cmd_cap_dump },
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
@@ -305,16 +309,34 @@ static void cmd_button(const command_t *command)
 
 static void cmd_get_voltage(const command_t *command)
 {
+    if (platform_adc_busy())
+    {
+        printf("error: adc busy\n");
+        return;
+    }
+    
     printf("voltage: %.3f V\n", platform_voltage_read());
 }
 
 static void cmd_get_temp(const command_t *command)
 {
+    if (platform_adc_busy())
+    {
+        printf("error: adc busy\n");
+        return;
+    }
+   
     printf("temp: %.1f C\n", platform_temp_read());
 }
 
 static void cmd_tm_start(const command_t *command)
 {
+   if (platform_adc_busy())
+    {
+        printf("error: adc busy\n");
+        return;
+    }
+   
     uint32_t arg = 100;
     
     if (command->argc > 1)
@@ -387,4 +409,59 @@ static void cmd_timer_blink_stop(const command_t *command)
     
     blink_toggles = platform_blink_stop();
     printf("timer_blink: stopped, %lu toggles\n", blink_toggles);
+}
+
+static void cmd_cap_start(const command_t *command)
+{
+    uint32_t count, period_us;
+
+    if (command->argc != 2 || !parse_u32(command->argv[0], &count) || !parse_u32(command->argv[1], &period_us))
+    {
+        printf("error: usage cap_start <N> <period_us>\n");
+        return;
+    }
+
+    if (count == 0 || count > PLATFORM_CAPTURE_MAX || period_us < 10)
+    {
+        printf("error: N must be 1..2000, period_us at least 10\n");
+        return;
+    }
+
+    if (telemetry_task_get_state() == TELEMETRY_STATE_RUN || !platform_capture_start(count, period_us))
+    {
+        printf("error: adc busy\n");
+        return;
+    }
+
+    printf("capture: started, %lu samples, period %lu us\n", count, period_us);
+
+}
+
+static void cmd_cap_dump(const command_t *command)
+{
+    platform_capture_t cap;
+    
+    if(!platform_capture_done())
+    {
+        printf("error: no capture\n");
+        return;
+    }
+
+    platform_capture_get(&cap);
+
+    printf("capture: %lu samples, period %lu us, interval %lu..%lu us, handler %.1f %%\n", cap.count, cap.period_us, cap.min_interval_us, cap.max_interval_us, cap.handler_percent);
+    for (uint32_t i = 0; i < cap.count; i++)
+    {
+        if (i % 16 == 0)
+        {
+            printf("cap:");
+        }
+
+        printf(" %u", cap.samples[i]);
+
+        if ((i + 1) % 16 == 0 || i + 1 == cap.count)
+        {
+            printf("\n");
+        }
+    }
 }
