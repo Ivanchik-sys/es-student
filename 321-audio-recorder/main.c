@@ -11,6 +11,7 @@
 #include "firmware.h"
 #include "platform/platform.h"
 #include "telemetry-task/telemetry-task.h"
+#include "block-task/block-task.h"
 
 typedef enum {
     PROFILING_LOOP,
@@ -55,6 +56,7 @@ int main()
         profiling_stop(PROFILING_PI);
 
         telemetry_task_handle();
+        block_task_handle();
         
         profiling_start(PROFILING_COMMAND);
         const command_t *command = stdio_text_protocol_handle();

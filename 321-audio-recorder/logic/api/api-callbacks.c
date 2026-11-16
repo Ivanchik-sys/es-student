@@ -6,6 +6,7 @@
 #include "pi-task/pi-task.h"
 #include "platform/platform.h"
 #include "telemetry-task/telemetry-task.h"
+#include "block-task/block-task.h"
 
 #include "logging/log.h"
 #include "device/device.h"
@@ -41,6 +42,7 @@ static void cmd_timer_blink_start(const command_t *command);
 static void cmd_timer_blink_stop(const command_t *command);
 static void cmd_cap_start(const command_t *command);
 static void cmd_cap_dump(const command_t *command);
+static void cmd_dma_cap(const command_t *command);
 
 // период телеметрии по умолчанию
 #define TELEMETRY_DEFAULT_PERIOD_MS 100
@@ -73,6 +75,7 @@ const api_command_t api_commands[] = {
     { "timer_blink_stop", "stop timer blink, number of toggles", cmd_timer_blink_stop },
     { "cap_start", "start capture: cap_start <N> <period_us>", cmd_cap_start },
     { "cap_dump", "capture results", cmd_cap_dump },
+    { "dma_cap", "return dma cap: dma_cap <N>", cmd_dma_cap}
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
@@ -463,5 +466,66 @@ static void cmd_cap_dump(const command_t *command)
         {
             printf("\n");
         }
+    }
+}
+
+static void print_dma_cap(const uint16_t *samples, uint32_t count, uint32_t time_us)
+{
+    if (samples == NULL || count == 0)
+    {
+        return;
+    }
+
+    uint16_t min_val = UINT16_MAX;
+    uint16_t max_val = 0;
+    uint64_t sum = 0;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        uint16_t val = samples[i];
+        if (val < min_val)
+        {
+            min_val = val;
+        }
+        if (val > max_val)
+        {
+            max_val = val;
+        }
+        sum += val;
+    }
+
+    double mean_val = (double)sum / (double)count;
+
+    uint64_t expected_us = (uint64_t)count * 1000000ULL / PLATFORM_SAMPLE_RATE_HZ;
+
+    printf("dma_cap: %lu samples in %lu us, expected %llu us, min %u max %u mean %.1f\n",
+           (unsigned long)count,
+           (unsigned long)time_us,
+           expected_us,
+           min_val,
+           max_val,
+           mean_val);
+}
+
+static void cmd_dma_cap(const command_t *command)
+{
+    uint32_t count = 0;
+
+    if (command->argc != 1 || !parse_u32(command->argv[0], &count))
+    {
+        printf("error: usage dma_cap <N>\n");
+        return;
+    }
+
+    if (count == 0 || count > PLATFORM_BLOCK_MAX)
+    {
+        printf("error: N must be 1..8192\n");
+        return;
+    }
+
+    if (telemetry_task_get_state() == TELEMETRY_STATE_RUN || !block_task_start(count, print_dma_cap))
+    {
+        printf("error: adc busy\n");
+        return;
     }
 }
