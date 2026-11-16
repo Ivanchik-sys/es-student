@@ -4,6 +4,8 @@
 #include "hardware/adc.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
+#include "hardware/pwm.h"
+#include "hardware/clocks.h"
 
 // вход АЦП: вывод GP26, канал 0
 #define ADC_PIN 26
@@ -24,6 +26,12 @@
 
 // частота clk_adc, от неё делитель отсчитывает шаг
 #define ADC_CLOCK_HZ 48000000.0f
+
+// вывод тона, его меандр делает модуль ШИМ
+#define TONE_PIN 20
+
+// счёт ШИМ тона: делитель приводит clk_sys к 1 МГц, счётчик считает микросекунды
+#define TONE_COUNT_HZ 1000000
 
 // кто сейчас работает с АЦП; меняют и функции, и обработчики прерываний
 typedef enum {
@@ -142,6 +150,19 @@ void platform_init(void)
     stream_channels[1] = dma_claim_unused_channel(true);
     irq_set_exclusive_handler(DMA_IRQ_0, on_stream_buffer);
     irq_set_enabled(DMA_IRQ_0, true);
+
+    gpio_set_function(TONE_PIN, GPIO_FUNC_PWM);
+
+    uint slice_num = pwm_gpio_to_slice_num(TONE_PIN);
+    uint chan_num = pwm_gpio_to_channel(TONE_PIN);
+    
+    // Делитель приводит clk_sys (обычно 125 МГц) ровно к 1 МГц (1 тик = 1 мкс)
+    float div = (float)clock_get_hz(clk_sys) / (float)TONE_COUNT_HZ;
+    pwm_set_clkdiv(slice_num, div);
+    
+    // Начальный порог 0 — на выводе ноль, модуль включён
+    pwm_set_chan_level(slice_num, chan_num, 0);
+    pwm_set_enabled(slice_num, true);
 }
 
 void platform_led_set(bool on)
@@ -449,4 +470,28 @@ void platform_stream_release(void)
 uint32_t platform_stream_overruns(void)
 {
     return stream_overruns;
+}
+
+bool platform_tone_set(uint32_t freq_hz)
+{
+    uint slice_num = pwm_gpio_to_slice_num(TONE_PIN);
+    uint chan_num = pwm_gpio_to_channel(TONE_PIN);
+
+    if (freq_hz == 0)
+    {
+        pwm_set_chan_level(slice_num, chan_num, 0);
+        return true;
+    }
+
+    if (freq_hz < 20 || freq_hz > 20000)
+    {
+        return false;
+    }
+
+    uint32_t period_us = TONE_COUNT_HZ / freq_hz;
+
+    pwm_set_wrap(slice_num, period_us - 1);
+    pwm_set_chan_level(slice_num, chan_num, period_us / 2);
+
+    return true;
 }

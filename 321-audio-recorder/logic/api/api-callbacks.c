@@ -45,6 +45,7 @@ static void cmd_cap_dump(const command_t *command);
 static void cmd_dma_cap(const command_t *command);
 static void cmd_stream_start(const command_t *command);
 static void cmd_stream_stop(const command_t *command);
+static void cmd_generate_tone(const command_t *command);
 
 // период телеметрии по умолчанию
 #define TELEMETRY_DEFAULT_PERIOD_MS 100
@@ -90,6 +91,7 @@ const api_command_t api_commands[] = {
     { "dma_cap", "return dma cap: dma_cap <N>", cmd_dma_cap},
     { "stream_start", "start stream: stream_start [8\\|16]", cmd_stream_start},
     { "stream_stop", "stop stream", cmd_stream_stop},
+    { "generate_tone", "generate tone: 0 — tone: off, else tone: <Hz> Hz", cmd_generate_tone},
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
@@ -591,4 +593,30 @@ void cmd_stream_stop(const command_t *command)
     }
 
     printf("stream: stopped, %lu frames, %lu samples, %lu overruns\n", stream_task_get_frames(), stream_task_get_samples(), stream_task_get_overruns());
+}
+
+static void cmd_generate_tone(const command_t *command)
+{
+    uint32_t freq_hz = 0;
+
+    if (command->argc != 1 || !parse_u32(command->argv[0], &freq_hz))
+    {
+        printf("error: usage generate_tone <Hz>\n");
+        return;
+    }
+
+    if (!platform_tone_set(freq_hz))
+    {
+        printf("error: Hz must be 0 or 20..20000\n");
+        return;
+    }
+
+    if (freq_hz == 0)
+    {
+        printf("tone: off\n");
+    }
+    else
+    {
+        printf("tone: %lu Hz\n", (unsigned long)freq_hz);
+    }
 }
