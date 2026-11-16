@@ -367,7 +367,7 @@ static void cmd_timer_blink_start(const command_t *command)
     
     if (command->argc != 1 || !parse_u32(command->argv[0], &period_ms))
     {
-        printf("error: usage\n");
+        printf("error: usage timer_blink_start <period_ms>\n");
         return;
     }
     
