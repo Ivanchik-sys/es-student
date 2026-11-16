@@ -22,3 +22,6 @@ uint32_t led_task_get_period_ms(void);
 void led_task_next_state(void);
 
 const char* led_task_get_state_name(led_state_t state);
+
+// Включает (period_ms > 0) или выключает (period_ms == 0) приоритетное мигание индикатора
+void led_task_set_indicator_ms(uint32_t period_ms);

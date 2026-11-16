@@ -43,13 +43,25 @@ static void cmd_timer_blink_stop(const command_t *command);
 static void cmd_cap_start(const command_t *command);
 static void cmd_cap_dump(const command_t *command);
 static void cmd_dma_cap(const command_t *command);
+static void cmd_stream_start(const command_t *command);
+static void cmd_stream_stop(const command_t *command);
 
 // период телеметрии по умолчанию
 #define TELEMETRY_DEFAULT_PERIOD_MS 100
 
+// период индикатора записи во время потока
+#define STREAM_BLINK_PERIOD_MS 250
+
 void api_print_telemetry(const telemetry_record_t *record)
 {
     printf("tm: %llu %.3f %.1f\n", record->time_us, record->voltage_v, record->temp_c);
+}
+
+void api_send_frame(const stream_header_t *header, const uint8_t *data, uint32_t bytes)
+{
+    // байты заголовка и отсчётов как они лежат в памяти
+    platform_write(header, sizeof(*header));
+    platform_write(data, bytes);
 }
 
 const api_command_t api_commands[] = {
@@ -75,7 +87,9 @@ const api_command_t api_commands[] = {
     { "timer_blink_stop", "stop timer blink, number of toggles", cmd_timer_blink_stop },
     { "cap_start", "start capture: cap_start <N> <period_us>", cmd_cap_start },
     { "cap_dump", "capture results", cmd_cap_dump },
-    { "dma_cap", "return dma cap: dma_cap <N>", cmd_dma_cap}
+    { "dma_cap", "return dma cap: dma_cap <N>", cmd_dma_cap},
+    { "stream_start", "start stream: stream_start [8\\|16]", cmd_stream_start},
+    { "stream_stop", "stop stream", cmd_stream_stop},
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
@@ -528,4 +542,53 @@ static void cmd_dma_cap(const command_t *command)
         printf("error: adc busy\n");
         return;
     }
+}
+
+void cmd_stream_start(const command_t *command)
+{
+    uint8_t bits = 16;
+
+    if (command->argc > 1)
+    {
+        printf("error: usage stream_start [8\\|16]\n");
+        return;
+    }
+
+    if (command->argc == 1)
+    {
+        uint32_t parsed_bits = 0;
+        if (!parse_u32(command->argv[0], &parsed_bits) || (parsed_bits != 8 && parsed_bits != 16))
+        {
+            printf("error: usage stream_start [8\\|16]\n");
+            return;
+        }
+        bits = (uint8_t)parsed_bits;
+    }
+
+    if (telemetry_task_get_state() == TELEMETRY_STATE_RUN || !stream_task_start(bits))
+    {
+        printf("error: adc busy\n");
+        return;
+    }
+
+    // Настройка индикатора записи: мигание с периодом STREAM_BLINK_PERIOD_MS
+    // (если в led-task есть функция мигания при выключенной задаче — вызываем её,
+    // иначе переводим задачу в LED_STATE_OFF и настраиваем период)
+    led_task_set_state(LED_STATE_OFF);
+    led_task_set_indicator_ms(STREAM_BLINK_PERIOD_MS);
+
+    // 5. Вывод строгого ответа о запуске
+    printf("stream: started, %u Hz, %u bit\n", PLATFORM_SAMPLE_RATE_HZ, bits);
+}
+
+void cmd_stream_stop(const command_t *command)
+{
+
+    if (stream_task_get_state() == STREAM_STATE_RUN)
+    {
+        stream_task_stop();
+        led_task_set_indicator_ms(0);
+    }
+
+    printf("stream: stopped, %lu frames, %lu samples, %lu overruns\n", stream_task_get_frames(), stream_task_get_samples(), stream_task_get_overruns());
 }

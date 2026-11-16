@@ -10,6 +10,10 @@ static bool led_is_on = false;
 static uint64_t half_period_us = 500000;
 static uint64_t last_toggle_us = 0;
 
+// Переменные приоритетного индикатора записи (0 — индикатор выключен)
+static uint64_t indicator_half_period_us = 0;
+static uint64_t indicator_last_toggle_us = 0;
+
 static const char *led_state_names[] = {
     "off", 
     "on", 
@@ -18,7 +22,7 @@ static const char *led_state_names[] = {
 
 const char* led_task_get_state_name(led_state_t state)
 {
-    if (state < 0 || state > 3) return "unknown";
+    if (state < 0 || state > 2) return "unknown";
     return led_state_names[state];
 }
 
@@ -28,6 +32,20 @@ static void led_set(bool state)
     platform_led_set(state);
 }
 
+void led_task_set_indicator_ms(uint32_t period_ms)
+{
+    if (period_ms == 0) {
+        indicator_half_period_us = 0;
+        // При выключении индикатора возвращаем физический светодиод в текущее состояние задачи
+        led_task_set_state(led_state);
+    } 
+    else 
+    {
+        indicator_half_period_us = (uint64_t)period_ms * 1000 / 2;
+        indicator_last_toggle_us = 0;
+    }
+}
+
 void led_task_init(void)
 {
     led_task_set_state(LED_STATE_ON);
@@ -35,6 +53,14 @@ void led_task_init(void)
 
 void led_task_handle(void)
 {
+    // Приоритет у индикатора записи: пока он включён, мигаем его периодом
+    if (indicator_half_period_us > 0) {
+        if (systime_period_elapsed(&indicator_last_toggle_us, indicator_half_period_us)) {
+            led_set(!led_is_on);
+        }
+        return;
+    }
+    
     switch (led_state) {
     case LED_STATE_OFF:
     case LED_STATE_ON:
@@ -51,6 +77,11 @@ void led_task_handle(void)
 void led_task_set_state(led_state_t state)
 {
     led_state = state;
+
+    // Если активен индикатор записи, не трогаем физический пин до его отключения
+    if (indicator_half_period_us > 0) {
+        return;
+    }
 
     // Действие при входе: выполняется один раз, в момент перехода
     switch (led_state) {
