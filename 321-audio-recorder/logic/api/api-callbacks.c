@@ -19,6 +19,7 @@
 #include "profiling/profiling.h"
 #include "systime/systime.h"
 #include <stdio.h>
+#include <math.h>
 
 static void cmd_help(const command_t *command);
 static void cmd_info(const command_t *command);
@@ -49,12 +50,17 @@ static void cmd_generate_tone(const command_t *command);
 static void cmd_hang(const command_t *command);
 static void cmd_wdt_enable(const command_t *command);
 static void cmd_reset_reason(const command_t *command);
+static void cmd_mic_bias(const command_t *command);
+static void cmd_mic_level(const command_t *command);
 
 // период телеметрии по умолчанию
 #define TELEMETRY_DEFAULT_PERIOD_MS 100
 
 // период индикатора записи во время потока
 #define STREAM_BLINK_PERIOD_MS 250
+
+// окно mic_level по умолчанию и окно mic_bias
+#define MIC_DEFAULT_WINDOW_MS 100
 
 void api_print_telemetry(const telemetry_record_t *record)
 {
@@ -98,6 +104,8 @@ const api_command_t api_commands[] = {
     { "hang", "stop superloop", cmd_hang},
     { "wdt_enable", "enable watchdog timer: wdt_enable <timeout_ms>", cmd_wdt_enable},
     { "reset_reason", "show last reset reason and watchdog restarts", cmd_reset_reason},
+    { "mic_bias", "show entry voltage", cmd_mic_bias},
+    { "mic_level", "show rms and peak voltage over time peri0d: mic_level [<ms>]", cmd_mic_level},
 
 };
 
@@ -127,6 +135,45 @@ static bool parse_u32(const char *text, uint32_t *value)
     *value = (uint32_t)number;
     return true;
 }
+
+// среднее и отклонение от среднего в кодах АЦП: среднеквадратичное и наибольшее
+static void block_stats(const uint16_t *samples, uint32_t count, float *mean, float *rms, float *peak)
+{
+    uint32_t sum = 0;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        sum += samples[i];
+    }
+    int32_t center = (int32_t)(sum / count);
+
+    // в целых числах: в float на 8192 отсчётах ядро считало бы в 24 раза дольше
+    uint64_t squares = 0;
+    uint32_t largest = 0;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        int32_t deviation = (int32_t)samples[i] - center;
+        uint32_t size = deviation < 0 ? -deviation : deviation;
+        squares += (uint64_t)(deviation * deviation);
+        if (size > largest)
+        {
+            largest = size;
+        }
+    }
+
+    *mean = (float)sum / count;
+    *rms = sqrtf((float)squares / count);
+    *peak = (float)largest;
+}
+
+// Общий помощник запуска захвата для cmd_dma_cap, cmd_mic_bias и cmd_mic_level
+static void start_block(uint32_t count, block_task_callback_t on_block)
+{
+    if (telemetry_task_get_state() == TELEMETRY_STATE_RUN || !block_task_start(count, on_block))
+    {
+        printf("error: adc busy\n");
+    }
+}
+
 
 static void cmd_help(const command_t *command)
 {
@@ -546,11 +593,7 @@ static void cmd_dma_cap(const command_t *command)
         return;
     }
 
-    if (telemetry_task_get_state() == TELEMETRY_STATE_RUN || !block_task_start(count, print_dma_cap))
-    {
-        printf("error: adc busy\n");
-        return;
-    }
+    start_block(count, print_dma_cap);
 }
 
 void cmd_stream_start(const command_t *command)
@@ -671,4 +714,68 @@ static void cmd_reset_reason(const command_t *command)
     {
         printf("reset: other, restarts %lu\n", (unsigned long)restarts);
     }
+}
+
+static void print_mic_bias(const uint16_t *samples, uint32_t count, uint32_t time_us)
+{
+    (void)time_us;
+
+    float mean = 0.0f;
+    float rms = 0.0f;
+    float peak = 0.0f;
+    block_stats(samples, count, &mean, &rms, &peak);
+
+    float bias_v = platform_adc_volts(mean);
+    printf("mic: bias %.3f V\n", bias_v);
+}
+
+static void print_mic_level(const uint16_t *samples, uint32_t count, uint32_t time_us)
+{
+    (void)time_us;
+
+    float mean = 0.0f;
+    float rms = 0.0f;
+    float peak = 0.0f;
+    block_stats(samples, count, &mean, &rms, &peak);
+
+    // Перевод в милливольты
+    float rms_mv = platform_adc_volts(rms) * 1000.0f;
+    float peak_mv = platform_adc_volts(peak) * 1000.0f;
+    uint32_t window_ms = (uint32_t)((uint64_t)count * 1000ULL / PLATFORM_SAMPLE_RATE_HZ);
+
+    printf("mic: level %.1f mV rms, peak %.1f mV, %lu ms\n",
+           rms_mv, peak_mv, (unsigned long)window_ms);
+}
+
+static void cmd_mic_bias(const command_t *command)
+{
+    (void)command;
+    start_block(4410, print_mic_bias);
+}
+
+static void cmd_mic_level(const command_t *command)
+{
+    uint32_t ms = MIC_DEFAULT_WINDOW_MS;
+
+    if (command->argc > 1)
+    {
+        printf("error: usage mic_level [<ms>]\n");
+        return;
+    }
+
+    if (command->argc == 1 && !parse_u32(command->argv[0], &ms))
+    {
+        printf("error: usage mic_level [<ms>]\n");
+        return;
+    }
+
+    // Числа отсчётов строго в uint64_t - защита от переполнения при больших аргументах
+    uint64_t count = (uint64_t)ms * PLATFORM_SAMPLE_RATE_HZ / 1000ULL;
+    if (count == 0 || count > PLATFORM_BLOCK_MAX)
+    {
+        printf("error: ms must be 1..185\n");
+        return;
+    }
+
+    start_block((uint32_t)count, print_mic_level);
 }

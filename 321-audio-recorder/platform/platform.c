@@ -538,3 +538,8 @@ bool platform_watchdog_caused_reset(uint32_t *restarts)
     *restarts = watchdog_restarts;
     return watchdog_reset;
 }
+
+float platform_adc_volts(float code)
+{
+    return code * 3.3f / 4096.0f;
+}
