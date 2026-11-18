@@ -46,6 +46,9 @@ static void cmd_dma_cap(const command_t *command);
 static void cmd_stream_start(const command_t *command);
 static void cmd_stream_stop(const command_t *command);
 static void cmd_generate_tone(const command_t *command);
+static void cmd_hang(const command_t *command);
+static void cmd_wdt_enable(const command_t *command);
+static void cmd_reset_reason(const command_t *command);
 
 // период телеметрии по умолчанию
 #define TELEMETRY_DEFAULT_PERIOD_MS 100
@@ -92,6 +95,10 @@ const api_command_t api_commands[] = {
     { "stream_start", "start stream: stream_start [8\\|16]", cmd_stream_start},
     { "stream_stop", "stop stream", cmd_stream_stop},
     { "generate_tone", "generate tone: 0 — tone: off, else tone: <Hz> Hz", cmd_generate_tone},
+    { "hang", "stop superloop", cmd_hang},
+    { "wdt_enable", "enable watchdog timer: wdt_enable <timeout_ms>", cmd_wdt_enable},
+    { "reset_reason", "show last reset reason and watchdog restarts", cmd_reset_reason},
+
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
@@ -618,5 +625,50 @@ static void cmd_generate_tone(const command_t *command)
     else
     {
         printf("tone: %lu Hz\n", (unsigned long)freq_hz);
+    }
+}
+
+static void cmd_hang(const command_t *command)
+{
+    printf("hang: superloop stopped\n");
+
+    // суперцикл больше не идёт, прерывания приходят как прежде
+    while (1)
+    {
+    }
+}
+
+static void cmd_wdt_enable(const command_t *command)
+{
+    uint32_t timeout_ms = 0;
+
+    if (command->argc != 1 || !parse_u32(command->argv[0], &timeout_ms))
+    {
+        printf("error: usage wdt_enable <timeout_ms>\n");
+        return;
+    }
+
+    if (!platform_watchdog_enable(timeout_ms))
+    {
+        printf("error: timeout_ms must be 1..8388\n");
+        return;
+    }
+
+    printf("wdt: enabled, timeout %lu ms\n", (unsigned long)timeout_ms);
+}
+
+static void cmd_reset_reason(const command_t *command)
+{
+    uint32_t restarts = 0;
+
+    bool by_wdt = platform_watchdog_caused_reset(&restarts);
+
+    if (by_wdt)
+    {
+        printf("reset: watchdog, restarts %lu\n", (unsigned long)restarts);
+    }
+    else
+    {
+        printf("reset: other, restarts %lu\n", (unsigned long)restarts);
     }
 }

@@ -72,6 +72,9 @@ int main()
         }
         profiling_stop(PROFILING_COMMAND);
 
+        // все задачи вернули управление — суперцикл жив
+        platform_watchdog_feed();
+
         profiling_stop(PROFILING_LOOP);
     }
 }

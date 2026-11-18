@@ -1,0 +1,85 @@
+задание: 3.2.6
+проект: 321-audio-recorder
+устройство: 2e8a:000a
+серийный номер: E663589863421C2E
+порт: COM5
+начало: 2026-11-18T17:34:00
+   0.001 --> 
+   0.509 --> help
+   0.520 <-- help
+   0.520 <-- help             list of commands
+   0.520 <-- info             device passport
+   0.520 <-- uptime           time since reset
+   0.520 <-- pi_start         start pi calculation: pi_start [terms]
+   0.520 <-- pi               pi calculation state
+   0.520 <-- profiling        superloop iteration: average and maximum
+   0.520 <-- profiling_reset  reset maximum iteration
+   0.520 <-- led_enable       switch led to ON
+   0.520 <-- led_disable      switch led to OFF
+   0.520 <-- led_blink        switch led to BLINK
+   0.520 <-- led_period       set led period in ms: led_period [period]
+   0.520 <-- button           button state and press count
+   0.520 <-- get_voltage      voltage on GP26, ADC input 0
+   0.520 <-- get_temp         chip temperature, degrees Celsius
+   0.520 <-- tm_start         start telemetry: tm_start [<period_ms>]
+   0.520 <-- tm_stop          stop telemetry
+   0.521 <-- charge_on        set 3.3V on GP22
+   0.521 <-- charge_off       set 0V on GP22
+   0.521 <-- timer_blink_start blink led by timer: timer_blink_start <period_ms>
+   0.521 <-- timer_blink_stop stop timer blink, number of toggles
+   0.521 <-- cap_start        start capture: cap_start <N> <period_us>
+   0.521 <-- cap_dump         capture results
+   0.533 <-- dma_cap          return dma cap: dma_cap <N>
+   0.533 <-- stream_start     start stream: stream_start [8\|16]
+   0.533 <-- stream_stop      stop stream
+   0.533 <-- generate_tone    generate tone: 0 ��� tone: off, else tone: <Hz> Hz
+   0.533 <-- hang             stop superloop
+   0.588 <-- wdt_enable       enable watchdog timer: wdt_enable <timeout_ms>
+   0.588 <-- reset_reason     show last reset reason and watchdog restarts
+   1.556 --> info
+   1.620 <-- info
+   1.620 <-- name: es-adc
+   1.621 <-- version: 1.0.0
+   1.621 <-- project: 321-audio-recorder
+   1.621 <-- repo: https://github.com/Ivanchik-sys/es-student
+   1.621 <-- board: pico
+   1.621 <-- serial: E663589863421C2E
+   1.621 <-- chip: manufacturer 0x927, part 0x0002, revision 2
+   1.621 <-- pico-sdk: 2.3.0
+   2.589 --> reset_reason
+   2.653 <-- reset_reason
+   2.653 <-- reset: other, restarts 0
+   3.105 --> wdt_enable 9000
+   3.169 <-- wdt_enable 9000
+   3.169 <-- error: timeout_ms must be 1..8388
+   3.619 --> wdt_enable 2000
+   3.682 <-- wdt_enable 2000
+   3.682 <-- wdt: enabled, timeout 2000 ms
+   4.134 --> uptime
+   4.198 <-- uptime
+   4.198 <-- uptime: 12699 ms
+   7.177 --> uptime
+   7.230 <-- uptime
+   7.230 <-- uptime: 15742 ms
+   7.735 --> hang
+   7.799 <-- hang
+   7.799 <-- hang: superloop stopped
+   8.769 --- ждём перезапуска платы
+  10.750 --- плата снова на связи
+  10.751 --> reset_reason
+  10.809 <-- reset_reason
+  10.809 <-- reset: watchdog, restarts 1
+  11.256 --> uptime
+  11.319 <-- uptime
+  11.319 <-- uptime: 1490 ms
+  11.773 --> info
+  11.837 <-- info
+  11.837 <-- name: es-adc
+  11.837 <-- version: 1.0.0
+  11.837 <-- project: 321-audio-recorder
+  11.837 <-- repo: https://github.com/Ivanchik-sys/es-student
+  11.837 <-- board: pico
+  11.837 <-- serial: E663589863421C2E
+  11.837 <-- chip: manufacturer 0x927, part 0x0002, revision 2
+  11.837 <-- pico-sdk: 2.3.0
+итог: отправлено кадров 12, принято строк 64

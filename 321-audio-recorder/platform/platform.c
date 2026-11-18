@@ -6,6 +6,7 @@
 #include "hardware/irq.h"
 #include "hardware/pwm.h"
 #include "hardware/clocks.h"
+#include "hardware/watchdog.h"
 
 // вход АЦП: вывод GP26, канал 0
 #define ADC_PIN 26
@@ -32,6 +33,9 @@
 
 // счёт ШИМ тона: делитель приводит clk_sys к 1 МГц, счётчик считает микросекунды
 #define TONE_COUNT_HZ 1000000
+
+// наибольший таймаут сторожевого таймера RP2040 (RP2040-E1)
+#define WATCHDOG_MAX_MS 8388
 
 // кто сейчас работает с АЦП; меняют и функции, и обработчики прерываний
 typedef enum {
@@ -68,6 +72,9 @@ static volatile bool stream_ready[2];
 static volatile uint32_t stream_overruns;
 static uint32_t stream_samples;
 static uint32_t stream_next;
+
+static bool watchdog_reset;
+static uint32_t watchdog_restarts;
 
 // АЦП в непрерывном режиме с шагом 44,1 кГц, буфер АЦП с запросом DMA
 // на каждый отсчёт
@@ -121,6 +128,19 @@ static void on_stream_buffer(void)
 
 void platform_init(void)
 {
+    // причина прошлого сброса; счётчик сбросов подряд хранит scratch-регистр 0,
+    // его не стирает сброс по сторожевому таймеру
+    watchdog_reset = watchdog_enable_caused_reboot();
+    if (watchdog_reset)
+    {
+        watchdog_hw->scratch[0]++;
+    }
+    else
+    {
+        watchdog_hw->scratch[0] = 0;
+    }
+    watchdog_restarts = watchdog_hw->scratch[0];
+    
     stdio_init_all();
 
     gpio_init(PLATFORM_LED_PIN);
@@ -494,4 +514,27 @@ bool platform_tone_set(uint32_t freq_hz)
     pwm_set_chan_level(slice_num, chan_num, period_us / 2);
 
     return true;
+}
+
+bool platform_watchdog_enable(uint32_t timeout_ms)
+{
+    if (timeout_ms == 0 || timeout_ms > WATCHDOG_MAX_MS)
+    {
+        return false;
+    }
+
+    // true — не считать, пока ядро остановлено отладчиком
+    watchdog_enable(timeout_ms, true);
+    return true;
+}
+
+void platform_watchdog_feed(void)
+{
+    watchdog_update();
+}
+
+bool platform_watchdog_caused_reset(uint32_t *restarts)
+{
+    *restarts = watchdog_restarts;
+    return watchdog_reset;
 }
