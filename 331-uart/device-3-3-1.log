@@ -1,0 +1,52 @@
+задание: 3.3.1
+проект: 331-uart
+конденсатор, мкФ: 4.7
+устройство: 2e8a:000a
+серийный номер: E663589863421C2E
+порт: COM5
+начало: 2026-11-20T12:57:19
+   0.000 --> 
+   0.515 --> help
+   0.519 <-- help
+   0.519 <-- help             list of commands
+   0.519 <-- info             device passport
+   0.519 <-- uptime           time since reset
+   0.519 <-- pi_start         start pi calculation: pi_start [terms]
+   0.520 <-- pi               pi calculation state
+   0.520 <-- profiling        superloop iteration: average and maximum
+   0.520 <-- profiling_reset  reset maximum iteration
+   0.520 <-- led_enable       switch led to ON
+   0.520 <-- led_disable      switch led to OFF
+   0.520 <-- led_blink        switch led to BLINK
+   0.520 <-- led_period       set led period in ms: led_period [period]
+   0.578 <-- button           button state and press count
+   0.578 <-- edge             rise and fall of the RC line: edge pp|od
+   1.548 --> info
+   1.612 <-- info
+   1.612 <-- name: es-uart
+   1.612 <-- version: 1.0.0
+   1.612 <-- project: 331-uart
+   1.612 <-- repo: https://github.com/Ivanchik-sys/es-student
+   1.612 <-- board: pico
+   1.612 <-- serial: E663589863421C2E
+   1.612 <-- chip: manufacturer 0x927, part 0x0002, revision 2
+   1.612 <-- pico-sdk: 2.3.0
+   2.580 --> edge pp
+   2.645 <-- edge pp
+   2.645 <-- edge pp: rise 4.0 ms, fall 3.9 ms
+   5.620 --> edge od
+   5.684 <-- edge od
+   6.072 <-- edge od: rise 157.2 ms, fall 3.9 ms
+  10.634 --> edge pp
+  10.698 <-- edge pp
+  10.698 <-- edge pp: rise 4.0 ms, fall 3.9 ms
+  13.669 --> edge od
+  13.733 <-- edge od
+  14.120 <-- edge od: rise 157.1 ms, fall 3.9 ms
+  18.700 --> edge xx
+  18.764 <-- edge xx
+  18.764 <-- error: usage edge pp|od
+  19.229 --> edge
+  19.293 <-- edge
+  19.293 <-- error: usage edge pp|od
+итог: отправлено кадров 9, принято строк 35
